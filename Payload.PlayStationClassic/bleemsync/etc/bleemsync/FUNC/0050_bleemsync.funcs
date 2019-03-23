@@ -296,29 +296,34 @@ setup_StockUI() {
     echo "[BLEEMSYNC](PROFILE) BleemSync EMMC + USB dyna link took: $(((end-start)/1000000))ms to execute"
   fi
 #-----------------------------------------------------------------------------#
-  if [ "$ui_ra_launcher" = "1" ] || [ "$ui_bootmenu_launcher" = "1" ]; then
-    start=$(date +%s%N)
-    #Add Launchers seperate from the games
+  # If enabled, load any additional additional launchers into the ui_menu database
+  if [ "$ui_app_launchers" = "1" ]; then
+    start_launcher=$(date +%s%N)
+    echo "[BLEEMSYNC](INFO) loading additional application launchers"
     total_count=`"$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd "SELECT GAME_ID FROM MENU_ENTRIES ORDER BY GAME_ID DESC LIMIT 1" ".quit"`
     echo "BEGIN TRANSACTION;" > "/tmp/launcher.sql"
-    if [ "$ui_ra_launcher" = "1" ]; then
-      echo "INSERT INTO DISC VALUES(NULL,$((total_count + 1)),1,'RetroArch');" >> "/tmp/launcher.sql"
-      echo "INSERT INTO MENU_ENTRIES VALUES($((total_count + 1)),'​RetroArch','LibRetro',2019,1,'CERO_A','QR_CODE_GM',NULL,9999);" >> "/tmp/launcher.sql"
-      ln -s "$bleemsync_path/etc/bleemsync/SUP/launchers/retroarch_launch" "${VOL_GAADATA}/$((total_count + 1))"
-      ln -s "$bleemsync_path/etc/bleemsync/SUP/launchers/retroarch_launch" "${VOL_DATAPCSX}/$((total_count + 1))"
-    fi
-    if [ "$ui_bootmenu_launcher" = "1" ]; then
-      echo "INSERT INTO DISC VALUES(NULL,$((total_count + 2)),1,'RetroArch');" >> "/tmp/launcher.sql"
-      echo "INSERT INTO MENU_ENTRIES VALUES($((total_count + 2)),'​Boot Menu','ModMyClassic',2019,1,'CERO_A','QR_CODE_GM',NULL,9999);" >> "/tmp/launcher.sql"
-      ln -s "$bleemsync_path/etc/bleemsync/SUP/launchers/bootmenu_launch" "${VOL_GAADATA}/$((total_count + 2))"
-      ln -s "$bleemsync_path/etc/bleemsync/SUP/launchers/bootmenu_launch" "${VOL_DATAPCSX}/$((total_count + 2))"
-    fi
+    for launcher in "$bleemsync_path/etc/bleemsync/SUP/launchers/"*; do
+      if [ -d "$launcher" ]; then
+        if [ -f "$launcher/launcher.cfg" ]; then
+          source "$bleemsync_path/etc/bleemsync/SUP/scripts/launcher_reset.cfg"
+          source "$launcher/launcher.cfg"
+          if [[ -z $launcher_filename || -z $launcher_title ]]; then
+            echo "[BLEEMSYNC](ERROR) launcher.cfg for $launcher is missing required variables launcher_filename and/or launcher_title"
+          else
+            let total_count++
+            echo "INSERT INTO DISC VALUES(NULL,$total_count,1,'$launcher_filename');" >> "/tmp/launcher.sql"
+            echo "INSERT INTO MENU_ENTRIES VALUES($total_count,'$launcher_title','$launcher_publisher',$launcher_year,1,'CERO_A','QR_CODE_GM',NULL,9999);" >> "/tmp/launcher.sql"
+            ln -s "$launcher" "${VOL_GAADATA}/$total_count"
+            ln -s "$launcher" "${VOL_DATAPCSX}/$total_count"
+            echo "[BLEEMSYNC](INFO) launcher loaded: $launcher"
+          fi
+        fi
+      fi
+    done
     echo "COMMIT;" >> "/tmp/launcher.sql"
-    
     "$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd ".read /tmp/launcher.sql" ".quit"
-    
-    end=$(date +%s%N)
-    echo "[BLEEMSYNC](PROFILE) BleemSync adding launchers: $(((end-start)/1000000))ms to execute"
+    end_launcher=$(date +%s%N)
+    echo "[BLEEMSYNC](PROFILE) loading additional application launchers took: $(((end_launcher-start_launcher)/1000000))ms to execute"
   fi
 #-----------------------------------------------------------------------------#
   # Clean up temp
