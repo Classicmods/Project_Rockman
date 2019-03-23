@@ -2,7 +2,7 @@
 ## Folder structure
 bleemsync/etc/bleemsync/SUP/launchers/*[application_name]*
 
-If `ui_app_launchers` is enabled the startup script will automatically load any validapplication lainchers found in this directory.
+If `ui_app_launchers` is enabled the startup script will automatically load any valid application launchers found in this directory.
 ### Application configuration file
 bleemsync/etc/bleemsync/SUP/launchers/*[application_name]*/launcher.cfg
 
