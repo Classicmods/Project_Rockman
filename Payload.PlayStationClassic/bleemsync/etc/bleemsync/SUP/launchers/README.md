@@ -6,7 +6,7 @@ If `ui_app_launchers` is enabled the startup script will automatically load any 
 ### Application configuration file
 bleemsync/etc/bleemsync/SUP/launchers/*[application_name]*/launcher.cfg
 
-This file must contain the following properties
+This file must contain the following properties. Only use characters a-z and numbers.
 
 | Property | Required | Description |
 | - | - | - |

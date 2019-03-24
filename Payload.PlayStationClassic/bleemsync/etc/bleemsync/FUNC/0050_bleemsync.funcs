@@ -310,6 +310,11 @@ setup_StockUI() {
           if [[ -z $launcher_filename || -z $launcher_title ]]; then
             echo "[BLEEMSYNC](ERROR) launcher.cfg for $launcher is missing required variables launcher_filename and/or launcher_title"
           else
+            # Only permit A-Z,1-9 to prevent characters which may break SQL insert
+            launcher_filename=`echo $launcher_filename | sed -e "s/[^ A-Za-z0-9]//g"`
+            launcher_title=`echo $launcher_title | sed -e "s/[^ A-Za-z0-9]//g"`
+            launcher_publisher=`echo $launcher_publisher | sed -e "s/[^ A-Za-z0-9]//g"`
+            launcher_year=`echo $launcher_year | sed -e "s/[^ A-Za-z0-9]//g"`
             let total_count++
             echo "INSERT INTO DISC VALUES(NULL,$total_count,1,'$launcher_filename');" >> "/tmp/launcher.sql"
             echo "INSERT INTO MENU_ENTRIES VALUES($total_count,'$launcher_title','$launcher_publisher',$launcher_year,1,'CERO_A','QR_CODE_GM',NULL,9999);" >> "/tmp/launcher.sql"
