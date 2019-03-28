@@ -393,6 +393,12 @@ execute_bleemsync_func(){
   echo "[BLEEMSYNC](PROFILE) BleemSync general fixing took: $(((end-start)/1000000))ms to execute"
 #-----------------------------------------------------------------------------#
   start=$(date +%s%N)
+  chmod +x "$bleemsync_path/opt/cc_transfer_tools/on_console_transfer.sh"
+  "$bleemsync_path/opt/cc_transfer_tools/on_console_transfer.sh"
+  end=$(date +%s%N)
+  echo "[BLEEMSYNC](PROFILE) Transfer tool execution took: $(((end-start)/1000000))ms to execute"
+#-----------------------------------------------------------------------------#
+  start=$(date +%s%N)
 
   boot_command="launch_StockUI"
   [ "$boot_target_stock_BM" = "1" ] && boot_command="launch_BootMenu"
