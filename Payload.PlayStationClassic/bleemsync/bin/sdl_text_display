@@ -3,18 +3,21 @@
 source /var/volatile/bleemsync.cfg
 
 if [ -z "$1" ]; then
-    echo "usage: $0 <TEXT> <TEXTX> <TEXTY> <FONTSIZE> <TEXTCOLOR> <TEXTBGCOLOR (0xAARRGGBB)> <BGIMAGEPATH> &" 1>&2
+    echo "usage: $0 <TEXT> <TEXTX> <TEXTY> <FONTSIZE> <FONT> <R> <G> <B> <BGIMAGEPATH> <TEXTBGCOLOR (0xAARRGGBB)> &" 1>&2
     exit 1
 fi
 
 #Process Input
-text=$1
-textX=$2
-textY=$3
-fontsize=$4
-color=$5
-bgcolor=$6
-bgimage=$7
+text="${1}"
+textX="${2}"
+textY="${3}"
+fontsize="${4}"
+font="${5}"
+colorR="${6}"
+colorG="${7}"
+colorB="${8}"
+bgimage="${9}"
+bgcolor="${10}"
 tmpcommand="/tmp/sdldisplaycmd"
 
 #Sanitise Input
@@ -22,18 +25,24 @@ if [ ! -z "$text" ]; then
   [ -z "$textX" ] && textX=640
   [ -z "$textY" ] && textY=120
   [ -z "$fontsize" ] && fontsize=12
-  [ -z "$color" ] && color=0xFFFFFFFF
+  [ -z "$font" ] && font=/usr/share/fonts/ttf/LiberationMono-Regular.ttf
+  [ -z "$colorR" ] && colorR=255
+  [ -z "$colorG" ] && colorG=255
+  [ -z "$colorB" ] && colorB=255
 fi
 [ -z "$bgimage" ] && bgimage="$bleemsync_path/etc/bleemsync/IMG/splashscreen.png"
 
 #Create SDL DISPLAY INPUT
 echo "IMAGE	640	360	$bgimage" > $tmpcommand
-if [ -z "$bgcolor"]; then
-  echo "TEXT	$textX	$textY	$fontsize	$color  $text" >> $tmpcommand
+if [ -z "$bgcolor" ]; then
+  echo 1
+  echo "FTEXT	$textX	$textY	$fontsize	$font	$colorR	$colorG	$colorB	$text" >> $tmpcommand
 else
-  echo "TEXTWBG	$textX	$textY	$fontsize	$color	$bgcolor	$text" >> $tmpcommand
+  echo 2
+  echo "FTEXTWBG	$textX	$textY	$fontsize	$font	$colorR	$colorG	$colorB	$bgcolor	$text" >> $tmpcommand
 fi
 
+cat $tmpcommand
 #Execute to FrameBuffer and clean up
 sdl_display -file $tmpcommand &
 pid=$!
