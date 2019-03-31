@@ -16,7 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 ###############################################################################
-# BleemSync Bootstapper executor v0.7
+# BleemSync Bootstapper executor v1.0
 # ModMyClassic.com / https://discordapp.com/invite/8gygsrw
 ###############################################################################
 
@@ -49,9 +49,10 @@ for funcs in /media/bleemsync/etc/bleemsync/FUNC/*.funcs; do source "$funcs"; do
 main(){
 	#If the devmode flag exists. Don't bother starting anything else up.
   if [ -f "$runtime_flag_path/DEVMODE" ]; then 
-  while true; do
-    sleep 99
-  done
+    sdl_text "Development Mode"
+    while true; do
+      sleep 99
+    done
 	fi
   for x in "${boot_sequence[@]}"; do
     echo "[BLEEMSYNC](BOOT) booting "$x"_func()" >> "${error_log}"

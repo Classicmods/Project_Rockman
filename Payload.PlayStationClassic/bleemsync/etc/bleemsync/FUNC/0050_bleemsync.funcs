@@ -263,6 +263,7 @@ setup_StockUI() {
 #-----------------------------------------------------------------------------#
   # Unite EMMC and MEDIA games and databases
   if [ "$link_EMMC_and_USB" = "1" ]; then
+    sdl_text "Dynamically linking game databases..."
     start=$(date +%s%N)
 
     emmc_gaadata_count=`"$bleemsync_path/bin/sqlite3" "/gaadata/databases/regional.db" -cmd "SELECT GAME_ID FROM GAME ORDER BY GAME_ID DESC LIMIT 1" ".quit"`
@@ -343,12 +344,14 @@ setup_StockUI() {
 ###############################################################################
 execute_bleemsync_func(){
   echo "[BLEEMSYNC](Executing) execute_bleemsync_func()"
+  sdl_text "Loading BleemSync..."
   echo 1 > /sys/class/leds/red/brightness
 #-----------------------------------------------------------------------------#
   old_system_dir="$mountpoint/system"
   [ -d "$mountpoint/System" ] && old_system_dir="$mountpoint/System"
   if [ -d "$old_system_dir" ]; then
     echo "[BLEEMSYNC](<1.0) Migrating System folder"
+    sdl_text "Migrating old BleemSync deployment..."
     start=$(date +%s%N)
     mkdir -p "$bleemsync_path/etc/bleemsync/SYS"
     cp -rf "$old_system_dir/"* "$bleemsync_path/etc/bleemsync/SYS/"
@@ -430,6 +433,7 @@ execute_bleemsync_func(){
 
   if [ ! -f "$bleemsync_path/etc/bleemsync/SYS/databases/regional.db" ]; then
     echo "[BLEEMSYNC](INFO) UI database does not exist. Waiting for automatic creation during UI startup"
+    sdl_text "UI database doesn't exist. Creating DB..."
     SECONDS=0
     db_timeout=45
     while [ ! -f "$bleemsync_path/etc/bleemsync/SYS/databases/regional.db" ]
@@ -468,6 +472,7 @@ execute_bleemsync_func(){
 #-----------------------------------------------------------------------------#
   echo 0 > /sys/class/leds/red/brightness
   echo "[BLEEMSYNC](INFO) completed bleemsync boot"
+  sdl_text "Starting up..."
 #-----------------------------------------------------------------------------#
   start=$(date +%s%N)
   # Cleanup before starting main user applications
