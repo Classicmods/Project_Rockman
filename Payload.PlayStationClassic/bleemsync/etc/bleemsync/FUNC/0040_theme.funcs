@@ -31,6 +31,7 @@ select_UI_theme(){
   chmod +x "$bleemsync_path/etc/bleemsync/SUP/scripts/overmount_existing"
   # Check for upper-case folder names and lower-case them
   for theme_folder in $(ls -d1 "$themes_path/"*/ | grep [A-Z]); do
+    theme_folder="$(basename $theme_folder)"
     mv -f "$themes_path/$theme_folder" "$themes_path/_$theme_folder"
     mv -f "$themes_path/_$theme_folder" "$(echo $themes_path/$theme_folder | tr 'A-Z' 'a-z')"
   done
@@ -66,7 +67,7 @@ select_UI_theme(){
     fi
 
     overmount_existing "$themes_path/$selected_theme" /usr/sony/share/data
-    echo "$selected_theme" >"$last_theme"
+    [ "$random_theme_onload" = "1" ] && echo "$selected_theme" > "$last_theme"
   fi
   # log if stuff is found or not
   if [ "$found_theme" == "1" ]; then
