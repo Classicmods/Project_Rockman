@@ -80,6 +80,21 @@ launch_retroarch_standalone(){
   launch_retroarch --from_ui
 }
 
+launch_launcher_command(){
+  echo "[BLEEMSYNC](INFO) launching command from launch.sh"
+  if [ -f "/var/volatile/launchtmp/launch.sh" ]; then
+    chmod +x "/var/volatile/launchtmp/launch.sh"
+    killall -s KILL showLogo sonyapp ui_menu auto_dimmer pcsx sdl_display &> "/dev/null"
+    "/var/volatile/launchtmp/launch.sh"
+    echo "[BLEEMSYNC](INFO) launch.sh has exited with $?"
+  else
+    echo "[BLEEMSYNC](ERROR) launch.sh is missing"
+    echo "[BLEEMSYNC](DEBUG) launchtmp path: `readlink -fn /var/volatile/launchtmp/`"
+  fi
+  rm -f "/var/volatile/launchtmp"
+  echo launch_StockUI > "/tmp/launchfilecommand"
+}
+
 launch_BootMenu(){
   echo "[BLEEMSYNC](INFO) launching BootMenu"
   # Cleanup 
