@@ -85,7 +85,10 @@ echo "[INTERCEPT](INFO) Starting PS Classic Intercept"
 # If launch script exists run it instead of pcsx/RA
 if [ -f "/data/AppData/sony/title/launch.sh" ]; then
   echo "[INTERCEPT](INFO) launch.sh exists"
-  exec "/data/AppData/sony/title/launch.sh" 
+  title_path=`readlink -fn /data/AppData/sony/title/`
+  ln -sf "$title_path" "/var/volatile/launchtmp"
+  echo "launch_launcher_command" > "/tmp/launchfilecommand"
+  touch "/data/power/prepare_suspend"
   # Shouldn't get to here
   exit 1
 fi
