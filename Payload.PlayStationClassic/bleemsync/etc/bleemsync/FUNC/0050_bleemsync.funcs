@@ -92,7 +92,10 @@ launch_launcher_command(){
     echo "[BLEEMSYNC](DEBUG) launchtmp path: `readlink -fn /var/volatile/launchtmp/`"
   fi
   rm -f "/var/volatile/launchtmp"
-  echo launch_StockUI > "/tmp/launchfilecommand"
+  if [ ! -f /tmp/launchfilecommand ]; then
+    # If no further launchfilecommand has been set then return to StockUI
+    echo launch_StockUI > "/tmp/launchfilecommand"
+  fi
 }
 
 launch_BootMenu(){
