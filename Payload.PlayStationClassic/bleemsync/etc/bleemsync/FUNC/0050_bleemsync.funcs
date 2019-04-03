@@ -126,7 +126,7 @@ launch_StockUI(){
   # Indicate we have done the first boot
   touch "/var/volatile/booted.flag"
   # Run Stock UI
-  /usr/sony/bin/ui_menu --power-off-enable &> "$runtime_log_path/ui_menu.log"
+  LD_PRELOAD="$bleemsync_path/lib/sdl_remap_arm.so" /usr/sony/bin/ui_menu --power-off-enable &> "$runtime_log_path/ui_menu.log"
   # Post Stock UI run cleanup
   rm -f "/data/power/prepare_suspend"
   sed -i "s/iUiUserSettingLastSelectGameCursorPos=.*/iUiUserSettingLastSelectGameCursorPos=0/" /data/AppData/sony/ui/user.pre

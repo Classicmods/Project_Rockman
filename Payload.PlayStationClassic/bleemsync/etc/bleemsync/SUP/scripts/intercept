@@ -205,7 +205,7 @@ fi
 echo "[INTERCEPT](INFO) Launching $intercept_pcsx_path $intercept_command -cdfile $intercept_game_path"
 end=$(date +%s%N)
 echo "[INTERCEPT](PROFILE) up to launching stock pcsx took: $(((end-start)/1000000))ms to execute"
-"$intercept_pcsx_path" $intercept_command -cdfile "$intercept_game_path"
+LD_PRELOAD="$bleemsync_path/lib/sdl_remap_arm.so" "$intercept_pcsx_path" $intercept_command -cdfile "$intercept_game_path"
 resume_ui_menu
 # Exit returning the pcsx exit code
 exit $?
