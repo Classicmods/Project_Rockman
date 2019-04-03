@@ -35,18 +35,15 @@ fi
 #Create SDL DISPLAY INPUT
 echo "IMAGE	640	360	$bgimage" > $tmpcommand
 if [ -z "$bgcolor" ]; then
-  echo 1
   echo "FTEXT	$textX	$textY	$fontsize	$font	$colorR	$colorG	$colorB	$text" >> $tmpcommand
 else
-  echo 2
   echo "FTEXTWBG	$textX	$textY	$fontsize	$font	$colorR	$colorG	$colorB	$bgcolor	$text" >> $tmpcommand
 fi
 
-cat $tmpcommand
 #Execute to FrameBuffer and clean up
-sdl_display -file $tmpcommand &
-pid=$!
-sleep 1
-for x in $(pidof "sdl_display"); do
-  [ ! "$pid" = "$x" ] && kill $x
-done
+sdl_display -file $tmpcommand > /dev/null 2>&1 &
+#pid=$!
+#sleep 0.5
+#for x in $(pidof "sdl_display"); do
+#  [ ! "$pid" = "$x" ] && kill $x
+#done

@@ -141,6 +141,7 @@ launch_StockUI(){
 ###############################################################################
 initial_setup() { 
   start=$(date +%s%N)
+  sdl_text "Parsing configurations..."
   if [ ! -f "$bleemsync_path/etc/bleemsync/CFG/bleemsync_cfg.INI" ] || [ -f "$bleemsync_path/flags/UPDATE_CONFIG" ]; then
     echo "[BLEEMSYNC](INFO) Injecting default bleemsync config..."
     cat "$bleemsync_path/etc/bleemsync/CFG/bleemsync_cfg_DEFAULT.INI" > "$bleemsync_path/etc/bleemsync/CFG/bleemsync_cfg.INI"
@@ -396,10 +397,11 @@ execute_bleemsync_func(){
   echo "[BLEEMSYNC](PROFILE) BleemSync general fixing took: $(((end-start)/1000000))ms to execute"
 #-----------------------------------------------------------------------------#
   start=$(date +%s%N)
-  chmod +x "$bleemsync_path/opt/cc_transfer_tools/on_console_transfer.sh"
-  "$bleemsync_path/opt/cc_transfer_tools/on_console_transfer.sh"
+  chmod +x "$bleemsync_path/opt/psc_transfer_tools/on_console_transfer.sh"
+  "$bleemsync_path/opt/psc_transfer_tools/on_console_transfer.sh"
   end=$(date +%s%N)
   echo "[BLEEMSYNC](PROFILE) Transfer tool execution took: $(((end-start)/1000000))ms to execute"
+  sdl_text "Loading BleemSync..."
 #-----------------------------------------------------------------------------#
   start=$(date +%s%N)
 
@@ -459,6 +461,7 @@ execute_bleemsync_func(){
 #-----------------------------------------------------------------------------#
   # Reload and apply udev rules that were overmounted above
   # Allows both controllers to be detected through a USB hub
+  sdl_text "Mounting files..."
   mount -o bind "$bleemsync_path/etc/bleemsync/SUP/scripts/20-joystick.rules" "/etc/udev/rules.d/20-joystick.rules"
   udevadm control --reload-rules
   udevadm trigger
@@ -468,6 +471,7 @@ execute_bleemsync_func(){
   mount -o bind "$bleemsync_path/etc/bleemsync/SUP/scripts/credits" /usr/sony/bin/showCopyright.sh
 #-----------------------------------------------------------------------------#
   # Select UI theme whilst load screen available (Profiler built in)
+  sdl_text "Setting up themes..."
   select_UI_theme
 #-----------------------------------------------------------------------------#
   echo 0 > /sys/class/leds/red/brightness
