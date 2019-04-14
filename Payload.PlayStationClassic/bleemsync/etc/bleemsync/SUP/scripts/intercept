@@ -20,15 +20,6 @@
 # ModMyClassic.com / https://discordapp.com/invite/8gygsrw
 ###############################################################################
 
-### CHECK FOR LAUNCH SCRIPT ###################################################
-# If launch script exists run it instead of pcsx/RA
-if [ -f "/data/AppData/sony/title/launch.sh" ]; then
-  echo "[INTERCEPT](INFO) launch.sh exists"
-  exec "/data/AppData/sony/title/launch.sh" 
-  # Shouldn't get to here
-  exit 1
-fi
-
 start=$(date +%s%N)
 ### LOAD CONFIGURATION ########################################################
 source "/var/volatile/bleemsync.cfg"
@@ -89,6 +80,19 @@ resume_ui_menu() {
 # with the path to this script
 ###############################################################################
 echo "[INTERCEPT](INFO) Starting PS Classic Intercept"
+
+### CHECK FOR LAUNCH SCRIPT ###################################################
+# If launch script exists run it instead of pcsx/RA
+if [ -f "/data/AppData/sony/title/launch.sh" ]; then
+  echo "[INTERCEPT](INFO) launch.sh exists"
+  title_path=`readlink -fn /data/AppData/sony/title/`
+  ln -sf "$title_path" "/var/volatile/launchtmp"
+  echo "launch_launcher_command" > "/tmp/launchfilecommand"
+  touch "/data/power/prepare_suspend"
+  # Shouldn't get to here
+  exit 1
+fi
+
 if [ "$#" -ge 1 ]; then
   echo "[INTERCEPT](INFO) There are $# parameters:"
   echo "[INTERCEPT](INFO) $*"
