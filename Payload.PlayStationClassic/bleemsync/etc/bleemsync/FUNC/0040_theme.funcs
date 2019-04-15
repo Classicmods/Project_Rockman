@@ -20,15 +20,22 @@
 # ModMyClassic.com / https://discordapp.com/invite/8gygsrw
 ###############################################################################
 
-overmount_existing(){
-  "$bleemsync_path/etc/bleemsync/SUP/scripts/overmount_existing" "$@"
+overlay_folder(){
+  busybox mount -t overlay -o lowerdir="$1":"$2" overlay "$2"
+}
+
+# overlay does not work with all filesystems - symlink files to tmpfs to fix issue
+symlink_folder_files()
+{
+  cd "$2"
+  find -mindepth 1 -type d -exec mkdir -p "$1/{}" \;
+  find -mindepth 1 -type f -exec ln -s "$2/{}" "$1/{}" \;
 }
 
 select_UI_theme(){
   echo "[BLEEMSYNC](Executing) select_UI_theme()"
   echo 1 > /sys/class/leds/red/brightness
   start=$(date +%s%N)
-  chmod +x "$bleemsync_path/etc/bleemsync/SUP/scripts/overmount_existing"
   # Check for upper-case folder names and lower-case them
   for theme_folder in $(ls -d1 "$themes_path/"*/ | grep [A-Z]); do
     theme_folder="$(basename $theme_folder)"
@@ -63,10 +70,12 @@ select_UI_theme(){
     # Check for the music folder
     if [ -d "$themes_path/$selected_theme/music" ] && [ "$override_theme_music" = "0" ]; then
       found_music_files=1
-      overmount_existing "$themes_path/$selected_theme/music" "$sounds_path/music"
+      symlink_folder_files /var/volatile/music "$themes_path/$selected_theme/music"
+      overlay_folder /var/volatile/music "$sounds_path/music"
     fi
 
-    overmount_existing "$themes_path/$selected_theme" /usr/sony/share/data
+    symlink_folder_files /var/volatile/theme "$themes_path/$selected_theme"
+    overlay_folder /var/volatile/theme /usr/sony/share/data
     [ "$random_theme_onload" = "1" ] && echo "$selected_theme" > "$last_theme"
   fi
   # log if stuff is found or not
