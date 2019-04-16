@@ -37,10 +37,12 @@ select_UI_theme(){
   echo 1 > /sys/class/leds/red/brightness
   start=$(date +%s%N)
   # Check for upper-case folder names and lower-case them
-  for theme_folder in $(ls -d1 "$themes_path/"*/ | grep [A-Z]); do
+  for theme_folder in $(ls -d1 "$themes_path/"*/); do
     theme_folder="$(basename $theme_folder)"
-    mv -f "$themes_path/$theme_folder" "$themes_path/_$theme_folder"
-    mv -f "$themes_path/_$theme_folder" "$(echo $themes_path/$theme_folder | tr 'A-Z' 'a-z')"
+    if echo "$theme_folder" | grep [A-Z] &> /dev/null; then
+      mv -f "$themes_path/$theme_folder" "$themes_path/_$theme_folder"
+      mv -f "$themes_path/_$theme_folder" "$(echo $themes_path/$theme_folder | tr 'A-Z' 'a-z')"
+    fi
   done
 
   # Set random theme if setting is set
