@@ -426,6 +426,9 @@ execute_bleemsync_func(){
   echo "[BLEEMSYNC](PROFILE) RA Playlist Generation execution took: $(((end-start)/1000000))ms to execute"
   sdl_text "Loading BleemSync..."
 #-----------------------------------------------------------------------------#
+  # Load additional modules
+  for mod in "$bleemsync_path/etc/bleemsync/SUP/modules/"*.ko; do insmod "$mod"; done
+#-----------------------------------------------------------------------------#
   start=$(date +%s%N)
 
   boot_command="launch_StockUI"
@@ -443,11 +446,6 @@ execute_bleemsync_func(){
   bleemsync_ui_app="$bleemsync_path/opt/bleemsync_ui/BleemSync"
   rm -f "$runtime_log_path/bleemsync_ui.log"
   rm -f "$bleemsync_path/opt/bleemsync_ui/temp/"*
-  
-#-----------------------------------------------------------------------------#
-  # Load additional modules
-  for mod in "$bleemsync_path/etc/bleemsync/SUP/modules/"*.ko; do insmod "$mod"; done
-#-----------------------------------------------------------------------------#
 
   # Skip launching BleemSync UI if a database exists, and the user is booting directly to RA or Stock UI
   if [ ! "$boot_command" = "launch_BootMenu" ] && [ -f "$bleemsync_path/etc/bleemsync/SYS/databases/regional.db" ]; then
