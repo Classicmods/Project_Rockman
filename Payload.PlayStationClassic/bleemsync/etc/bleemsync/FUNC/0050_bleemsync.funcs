@@ -419,6 +419,11 @@ execute_bleemsync_func(){
   "$bleemsync_path/opt/psc_transfer_tools/on_console_transfer.sh"
   end=$(date +%s%N)
   echo "[BLEEMSYNC](PROFILE) Transfer tool execution took: $(((end-start)/1000000))ms to execute"
+  
+  start=$(date +%s%N)
+  "$bleemsync_path/bin/lpl_generator" "$bleemsync_path/etc/bleemsync/SYS/databases/regional.db" "$retroarch_path/.config/retroarch/playlists/PlayStation Classic - External.lpl" "$mountpoint/games"
+  end=$(date +%s%N)
+  echo "[BLEEMSYNC](PROFILE) RA Playlist Generation execution took: $(((end-start)/1000000))ms to execute"
   sdl_text "Loading BleemSync..."
 #-----------------------------------------------------------------------------#
   start=$(date +%s%N)
