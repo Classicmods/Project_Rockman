@@ -23,13 +23,18 @@
 ###############################################################################
 ### LOCAL FUNCTIONS ###########################################################
 ###############################################################################
+kill_ui_programs(){
+  killall -s TERM sdl_display &> "/dev/null"
+  killall -s KILL showLogo sonyapp ui_menu auto_dimmer pcsx &> "/dev/null"
+}
+
 launch_retroarch(){
   echo "[BLEEMSYNC](INFO) launching retroarch"
   if [ -f "$bleemsync_path/opt/retroarch/retroarch" ]; then
     # Cleanup 
     cd "/home/root"
     killall -s TERM BleemSync &> "/dev/null"
-    killall -s KILL showLogo sonyapp ui_menu auto_dimmer pcsx sdl_display &> "/dev/null"
+    kill_ui_programs
     rm -f "/tmp/launchfilecommand"
     rm -f "$runtime_log_path/retroarch.log"
 	# Disable Power button
@@ -79,7 +84,7 @@ launch_launcher_command(){
   echo "[BLEEMSYNC](INFO) launching command from launch.sh"
   if [ -f "/var/volatile/launchtmp/launch.sh" ]; then
     chmod +x "/var/volatile/launchtmp/launch.sh"
-    killall -s KILL showLogo sonyapp ui_menu auto_dimmer pcsx sdl_display &> "/dev/null"
+    kill_ui_programs
     "/var/volatile/launchtmp/launch.sh"
     echo "[BLEEMSYNC](INFO) launch.sh has exited with $?"
   else
@@ -97,7 +102,7 @@ launch_BootMenu(){
   echo "[BLEEMSYNC](INFO) launching BootMenu"
   # Cleanup 
   cd "/home/root"
-  killall -s KILL showLogo sonyapp ui_menu auto_dimmer pcsx sdl_display &> "/dev/null"
+  kill_ui_programs
   rm -f "/tmp/launchfilecommand"
   rm -fr "$bleemsync_path/opt/bleemsync_ui/temp"
   # Disable Power button
@@ -121,7 +126,7 @@ launch_StockUI(){
   # Cleanup
   cd "/home/root"
   killall -s TERM BleemSync &> /dev/null
-  killall -s KILL showLogo sonyapp ui_menu auto_dimmer pcsx sdl_display &> "/dev/null"
+  kill_ui_programs
   rm -f "/tmp/launchfilecommand"
   # Setup Stock UI with custom
   setup_StockUI
@@ -265,7 +270,6 @@ setup_StockUI() {
 #-----------------------------------------------------------------------------#
   # Unite EMMC and MEDIA games and databases
   if [ "$link_EMMC_and_USB" = "1" ]; then
-    sdl_text "Dynamically linking game databases..."
     start=$(date +%s%N)
 
     emmc_gaadata_count=`"$bleemsync_path/bin/sqlite3" "/gaadata/databases/regional.db" -cmd "SELECT GAME_ID FROM GAME ORDER BY GAME_ID DESC LIMIT 1" ".quit"`
@@ -515,7 +519,7 @@ execute_bleemsync_func(){
   rm -rf "/tmp/systemd"*
   rm -rf "/tmp/diag/"*
 
-  killall -s KILL sdl_display &> /dev/null
+  killall -s TERM sdl_display &> /dev/null
 
   end=$(date +%s%N)
   echo "[BLEEMSYNC](PROFILE) BleemSync pre run cleanup took: $(((end-start)/1000000))ms to execute"
@@ -541,7 +545,7 @@ execute_bleemsync_func(){
   sync
   echo "[BLEEMSYNC](Executed) execute_bleemsync_func()"
   killall -s TERM BleemSync &> "/dev/null"
-  killall -s KILL showLogo sonyapp ui_menu auto_dimmer pcsx sdl_display &> "/dev/null"
+  kill_ui_programs
   reboot
   exit 0
 }
