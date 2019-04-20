@@ -115,9 +115,9 @@ launch_BootMenu(){
   fi
   # Run BootMenu
   if [ "$boot_menu_music" = "1" ]; then
-    $bleemsync_path/bin/boot_menu --image-folder "$images_path" --music-folder "$sounds_path/" --theme-folder "$themes_path/$selected_theme/boot"
+    $bleemsync_path/bin/boot_menu --image-folder "$images_path" --music-folder "$sounds_path/" --theme-folder "$themes_path/$selected_theme/boot" --default-cfg-file "$bleemsync_path/etc/bleemsync/CFG/bleemsync_cfg_DEFAULT.INI" --cfg-file "$bleemsync_path/etc/bleemsync/CFG/bleemsync_cfg.INI" --ui-themes-folder "$themes_path"
   else
-    $bleemsync_path/bin/boot_menu --image-folder "$images_path" --theme-folder "$themes_path/$selected_theme/boot"
+    $bleemsync_path/bin/boot_menu --image-folder "$images_path" --theme-folder "$themes_path/$selected_theme/boot" --default-cfg-file "$bleemsync_path/etc/bleemsync/CFG/bleemsync_cfg_DEFAULT.INI" --cfg-file "$bleemsync_path/etc/bleemsync/CFG/bleemsync_cfg.INI" --ui-themes-folder "$themes_path"
   fi
 }
 
