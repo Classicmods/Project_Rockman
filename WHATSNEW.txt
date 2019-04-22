@@ -1,3 +1,5 @@
+Version X.X (x/x/2019)
+
 * Config flags have been updated.
 
 The Bootloader uses the following flags:
@@ -29,4 +31,11 @@ These backups are tied to your system, and can only be restored to your system.
 
 * OTG Support
 This version of the payload supports use of a custom kernel that enables OTG. The kernel is installed separately.
+
+* Kernel install
+This version supports installation of an updated LINUX kernel. Please be aware that this can be a harmful change.
+Please only install kernels from trusted sources. Updated kernel should be placed in /media/bleemsync/update, and will flash on next boot. Use the RESTORE_KERNEL flag in the /media/bleemsync/flags directory if you want to restore to stock.
+
+* Updated xpad.ko
+This driver was updated to the latest mainline LINUX source for increased compatibility with controllers.
 
