@@ -1,0 +1,32 @@
+* Config flags have been updated.
+
+The Bootloader uses the following flags:
+
+UPDATE_TELNET : Updates the RNDIS/FTP/Telnet Hack
+
+UPDATE_SSH : Installs and Updates SSH
+
+UPDATE_USBHOST : Updates the USBHost Service that changes to HOST mode
+
+BACKUP_MAIN : Backs up main partition set
+
+BACKUP_KERNEL : Backs up kernel partition only
+
+BACKUP_RECOVERY : Backs up the recovery partition set
+
+RESTORE_MAIN : Restores main partiton set. WARNING: ALL DATA WILL BE LOST
+
+RESTORE_KERNEL : Restores kernel partition
+
+RESTORE_RECOVERY : Restores the recovery partition set
+
+UNINSTALL : Uninstalls all hacks completely.
+
+
+* Backups are automatically created
+Backups go into /media/bleemsync/backups
+These backups are tied to your system, and can only be restored to your system.
+
+* OTG Support
+This version of the payload supports use of a custom kernel that enables OTG. The kernel is installed separately.
+
