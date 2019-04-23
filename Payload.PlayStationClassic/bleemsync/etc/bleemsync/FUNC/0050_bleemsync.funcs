@@ -297,7 +297,7 @@ setup_StockUI() {
     done 
 
     if [ "$link_alphabeticalise" = "1" ]; then
-      "$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd "DROP VIEW GAME" "CREATE VIEW GAME AS SELECT * FROM MENU_ENTRIES ORDER BY LOWER(GAME_TITLE_STRING)" ".quit"
+      "$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd "UPDATE MENU_ENTRIES SET POSITION=0" ".quit"
     fi
     end=$(date +%s%N)
     echo "[BLEEMSYNC](PROFILE) BleemSync EMMC + USB dyna link took: $(((end-start)/1000000))ms to execute"
@@ -308,6 +308,7 @@ setup_StockUI() {
     start_launcher=$(date +%s%N)
     echo "[BLEEMSYNC](INFO) loading additional application launchers"
     total_count=`"$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd "SELECT GAME_ID FROM MENU_ENTRIES ORDER BY GAME_ID DESC LIMIT 1" ".quit"`
+    last_position=`"$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd "SELECT case when POSITION is null then 1 else POSITION + 1 end FROM MENU_ENTRIES ORDER BY POSITION DESC LIMIT 1" ".quit"`
     echo "BEGIN TRANSACTION;" > "/tmp/launcher.sql"
     for launcher in "$bleemsync_path/etc/bleemsync/SUP/launchers/"*; do
       if [ -d "$launcher" ]; then
@@ -322,9 +323,14 @@ setup_StockUI() {
             launcher_title=`echo $launcher_title | sed -e "s/[^ A-Za-z0-9]//g"`
             launcher_publisher=`echo $launcher_publisher | sed -e "s/[^ A-Za-z0-9]//g"`
             launcher_year=`echo $launcher_year | sed -e "s/[^ A-Za-z0-9]//g"`
+            if [ "$launcher_sort" = "no" ]; then
+              launcher_sort="$last_position"
+            else
+              launcher_sort="0"
+            fi
             let total_count++
             echo "INSERT INTO DISC VALUES(NULL,$total_count,1,'$launcher_filename');" >> "/tmp/launcher.sql"
-            echo "INSERT INTO MENU_ENTRIES VALUES($total_count,'$launcher_title','$launcher_publisher',$launcher_year,1,'CERO_A','QR_CODE_GM',NULL,9999);" >> "/tmp/launcher.sql"
+            echo "INSERT INTO MENU_ENTRIES VALUES($total_count,'$launcher_title','$launcher_publisher',$launcher_year,1,'CERO_A','QR_CODE_GM',NULL,$launcher_sort);" >> "/tmp/launcher.sql"
             ln -s "$launcher" "${VOL_GAADATA}/$total_count"
             ln -s "$launcher" "${VOL_DATAPCSX}/$total_count"
             echo "[BLEEMSYNC](INFO) launcher loaded: $launcher"
