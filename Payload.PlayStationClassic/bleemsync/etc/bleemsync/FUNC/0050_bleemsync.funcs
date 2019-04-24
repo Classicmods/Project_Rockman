@@ -107,11 +107,13 @@ launch_BootMenu(){
   rm -fr "$bleemsync_path/opt/bleemsync_ui/temp"
   # Disable Power button
   echo 2 > /data/power/disable
-  # Start BleemSync UI app (will be removed in 1.1)
-  if [ ! "$(ps | grep -v grep | grep BleemSync)" ]; then
-    rm -f "$runtime_log_path/bleemsync_ui.log"
-    cd "$bleemsync_path/opt/bleemsync_ui/"
-    chmod +x "$bleemsync_ui_app" && $bleemsync_ui_app >> "$runtime_log_path/bleemsync_ui.log" 2>&1 &
+  # Start BleemSync UI app
+  if [ $(cat /sys/module/musb_hdrc/parameters/charger_info) -eq "1" ] || [ `cat /sys/class/drm/card0-HDMI-A-1/status` = "disconnected" ]; then
+    if [ ! "$(ps | grep -v grep | grep BleemSync)" ]; then
+      rm -f "$runtime_log_path/bleemsync_ui.log"
+      cd "$bleemsync_path/opt/bleemsync_ui/"
+      chmod +x "$bleemsync_ui_app" && $bleemsync_ui_app >> "$runtime_log_path/bleemsync_ui.log" 2>&1 &
+    fi
   fi
   # Run BootMenu
   if [ "$boot_menu_music" = "1" ]; then
@@ -463,39 +465,47 @@ execute_bleemsync_func(){
   rm -f "$runtime_log_path/bleemsync_ui.log"
   rm -f "$bleemsync_path/opt/bleemsync_ui/temp/"*
 
-  # Skip launching BleemSync UI if a database exists, and the user is booting directly to RA or Stock UI
-  if [ ! "$boot_command" = "launch_BootMenu" ] && [ -f "$bleemsync_path/etc/bleemsync/SYS/databases/regional.db" ]; then
-    echo "[BLEEMSYNC](INFO) Skip startup of BleemSync UI as booting directly to $boot_command"
-  else
-    #This needs some serious cleaning in future revisions...
-    echo "[BLEEMSYNC](INFO) Starting BleemSync UI"
-    cd "$bleemsync_path/opt/bleemsync_ui/"
-    chmod +x "$bleemsync_ui_app" && $bleemsync_ui_app >> "$runtime_log_path/bleemsync_ui.log" 2>&1 &
-    #urgh
-    sleep 4
+  # Only launch BleemSync UI if data lines are connected or HDMI is not connected
+  if [ $(cat /sys/module/musb_hdrc/parameters/charger_info) -eq "1" ] || [ `cat /sys/class/drm/card0-HDMI-A-1/status` = "disconnected" ]; then
+    # Skip launching BleemSync UI if a database exists, and the user is booting directly to RA or Stock UI
+    if [ ! "$boot_command" = "launch_BootMenu" ] && [ -f "$bleemsync_path/etc/bleemsync/SYS/databases/regional.db" ]; then
+      echo "[BLEEMSYNC](INFO) Skip startup of BleemSync UI as booting directly to $boot_command"
+    else
+      #This needs some serious cleaning in future revisions...
+      echo "[BLEEMSYNC](INFO) Starting BleemSync UI"
+      cd "$bleemsync_path/opt/bleemsync_ui/"
+      chmod +x "$bleemsync_ui_app" && $bleemsync_ui_app >> "$runtime_log_path/bleemsync_ui.log" 2>&1 &
+      #urgh
+      sleep 4
+    fi
+
+    if [ ! -f "$bleemsync_path/etc/bleemsync/SYS/databases/regional.db" ]; then
+      echo "[BLEEMSYNC](INFO) UI database does not exist. Waiting for automatic creation during UI startup"
+      sdl_text "UI database doesn't exist. Creating DB..."
+      SECONDS=0
+      db_timeout=45
+      while [ ! -f "$bleemsync_path/etc/bleemsync/SYS/databases/regional.db" ]
+      do
+        sleep 1s
+        [ $SECONDS -gt $db_timeout ] && break
+      done
+      [ -f "$bleemsync_path/etc/bleemsync/SYS/databases/regional.db" ] && echo "[BLEEMSYNC](INFO) database generated in $SECONDS seconds."
+    fi
   fi
 
+  # Check for regional database
   if [ ! -f "$bleemsync_path/etc/bleemsync/SYS/databases/regional.db" ]; then
-    echo "[BLEEMSYNC](INFO) UI database does not exist. Waiting for automatic creation during UI startup"
-    sdl_text "UI database doesn't exist. Creating DB..."
-    SECONDS=0
-    db_timeout=45
-    while [ ! -f "$bleemsync_path/etc/bleemsync/SYS/databases/regional.db" ]
-    do
-      sleep 1s
-      if [ $SECONDS -gt $db_timeout ]; then
-        echo "[BLEEMSYNC](ERROR) database has not been created after waiting $db_timeout seconds."
-        #display error message
-        echo 0 > /sys/class/leds/green/brightness
-        echo 1 > /sys/class/leds/red/brightness
-        $bleemsync_path/bin/sdl_display "$bleemsync_path/etc/bleemsync/IMG/woah.png" &
-        sleep 1
-        sync
-        reboot
-        exit 1
-      fi
-    done
-    echo "[BLEEMSYNC](INFO) database generated in $SECONDS seconds."
+    echo "[BLEEMSYNC](ERROR) regional database has not been created."
+    #display error message
+    sdl_text "Could not create regional database."
+    sleep 2
+    echo 0 > /sys/class/leds/green/brightness
+    echo 1 > /sys/class/leds/red/brightness
+    $bleemsync_path/bin/sdl_display "$bleemsync_path/etc/bleemsync/IMG/woah.png" &
+    sleep 1
+    sync
+    reboot
+    exit 1
   fi
 
   end=$(date +%s%N)
