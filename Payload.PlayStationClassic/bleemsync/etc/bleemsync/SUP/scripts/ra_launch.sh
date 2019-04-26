@@ -13,5 +13,5 @@ touch "/tmp/launch_ra.flag"
 
 while [ -f "/tmp/launch_ra.flag" ]; do
   rm -f "/tmp/launch_ra.flag"
-  "$retroarch_path/retroarch" "$@" 2>&1 | "$bleemsync_path/bin/ra_watch" >> "$runtime_log_path/retroarch.log"
+  PATH="$PATH:$bleemsync_path/bin" "$retroarch_path/retroarch" "$@" 2>&1 | "$bleemsync_path/bin/ra_watch" >> "$runtime_log_path/retroarch.log"
 done
