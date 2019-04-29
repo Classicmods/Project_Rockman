@@ -310,7 +310,9 @@ setup_StockUI() {
     start_launcher=$(date +%s%N)
     echo "[BLEEMSYNC](INFO) loading additional application launchers"
     total_count=`"$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd "SELECT GAME_ID FROM MENU_ENTRIES ORDER BY GAME_ID DESC LIMIT 1" ".quit"`
+    [ -z "$total_count" ] && total_count=0
     last_position=`"$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd "SELECT case when POSITION is null then 1 else POSITION + 1 end FROM MENU_ENTRIES ORDER BY POSITION DESC LIMIT 1" ".quit"`
+    [ -z "$last_position" ] && last_position=1
     echo "BEGIN TRANSACTION;" > "/tmp/launcher.sql"
     for launcher in "$bleemsync_path/etc/bleemsync/SUP/launchers/"*; do
       if [ -d "$launcher" ]; then
