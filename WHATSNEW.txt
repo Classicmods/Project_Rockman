@@ -1,4 +1,4 @@
-Version X.X (x/x/2019)
+Version 1.1 Beta (x/x/2019)
 
 * Config flags have been updated.
 
@@ -27,15 +27,36 @@ UNINSTALL : Uninstalls all hacks completely.
 
 * Backups are automatically created
 Backups go into /media/bleemsync/backups
-These backups are tied to your system, and can only be restored to your system.
+They will recreate themselves automatically if they are not detected, so please leave them there.
 
-* OTG Support
-This version of the payload supports use of a custom kernel that enables OTG. The kernel is installed separately.
+***WARNINGS***
+Drives fail eventually, and filesystems can be corrupted.
+PLEASE BACK THESE FILES UP TO A SAFE LOCATION!!!
+WE ARE NOT RESPONSIBLE IF YOU LOSE THESE FILES!!!
+SERIOUSLY DON'T MAKE IT HARDER TO RESTORE YOUR SYSTEM!!!
+
+The following files will be created:
+
+LBOOT.EPB - The boot files for the PSC. This is the filesystem backup. 
+LBOOT_KERNEL.EPB - The default kernel for the PSC.
+LRECOVERY.EPB - The recovery partitions.
+
+* USB OTG Support
+This version of the BleemSync payload supports use of a custom kernel that enables USB OTG. This supports the use of a USB OTG adapter in the rear USB (power) port. This will bypass the power limitations of the front ports to allow the use of nearly all storage or controller devices. The kernel is installed separately. Please see below.
 
 * Kernel install
-This version supports installation of an updated LINUX kernel. Please be aware that this can be a harmful change.
+This version of the BleemSync payload supports installation of an updated LINUX kernel. Please be aware that this can be a harmful change that can brick your device. While the team has done everything possible to ensure this can be done safely, please follow the proper guidelines for flashing a payload.
+
 Please only install kernels from trusted sources. Updated kernel should be placed in /media/bleemsync/update, and will flash on next boot. Use the RESTORE_KERNEL flag in the /media/bleemsync/flags directory if you want to restore to stock.
 
 * Updated xpad.ko
 This driver was updated to the latest mainline LINUX source for increased compatibility with controllers.
 
+* New option for adding games to BleemSync UI
+Playstation games can now be added to the BSUI by dropping them into /media/transfer.
+Multidisc games are supported. Naming format should be GameName(Disc 1) GameName(Disc 2) etc.
+
+Formats supported:
+
+BIN/CUE
+ISO(CUE will generate automatically)
