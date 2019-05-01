@@ -421,8 +421,9 @@ execute_bleemsync_func(){
   if [ "$generate_external_game_playlist" = "1" ]; then
     start=$(date +%s%N)
     
-    mkdir -p "$retroarch_path/.config/retroarch/playlists"
-    "$bleemsync_path/bin/lpl_generator" "$bleemsync_path/etc/bleemsync/SYS/databases/regional.db" "$retroarch_path/.config/retroarch/playlists/PlayStation Classic - External.lpl" "$mountpoint/games"
+    mkdir -p "$retroarch_path/.config/retroarch/playlists" "$retroarch_path/.config/retroarch/thumbnails/PlayStation Classic - External"
+    "$bleemsync_path/bin/lpl_generator" "$bleemsync_path/etc/bleemsync/SYS/databases/regional.db" "$retroarch_path/.config/retroarch/playlists/PlayStation Classic - External.lpl" "$mountpoint/games" "/tmp/ra_playlist_thumbnails"
+    mount -o bind "/tmp/ra_playlist_thumbnails" "$retroarch_path/.config/retroarch/thumbnails/PlayStation Classic - External"
     
     end=$(date +%s%N)
     echo "[BLEEMSYNC](PROFILE) RA External Playlist Generation execution took: $(((end-start)/1000000))ms to execute"
@@ -559,6 +560,7 @@ execute_bleemsync_func(){
   # Debug cleanup
   umount /etc/udev/rules.d/20-joystick.rules
   if [ "$boot_disable_health" = "1" ]; then umount /usr/sony/bin/ui_menu; fi
+  [ "$generate_external_game_playlist" = "1" ] && umount "$retroarch_path/.config/retroarch/thumbnails/PlayStation Classic - External"
 #-----------------------------------------------------------------------------#
   sync
   echo "[BLEEMSYNC](Executed) execute_bleemsync_func()"
