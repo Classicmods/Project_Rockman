@@ -1,0 +1,8 @@
+kernel/crypto/gcm.ko
+kernel/crypto/ccm.ko
+kernel/crypto/arc4.ko
+kernel/crypto/ghash-generic.ko
+kernel/drivers/net/wireless/realtek/rtl8xxxu/rtl8xxxu.ko
+kernel/drivers/net/wireless/realtek/rtl8188eus/8188eu.ko
+kernel/drivers/media/usb/gspca/gspca_main.ko
+kernel/net/mac80211/mac80211.ko
