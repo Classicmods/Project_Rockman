@@ -16,7 +16,7 @@ BACKUP_KERNEL : Backs up kernel partition only
 
 BACKUP_RECOVERY : Backs up the recovery partition set
 
-RESTORE_MAIN : Restores main partiton set. WARNING: ALL DATA WILL BE LOST
+RESTORE_MAIN : Restores main partition set. WARNING: ALL DATA WILL BE LOST
 
 RESTORE_KERNEL : Restores kernel partition
 
@@ -55,8 +55,30 @@ This driver was updated to the latest mainline LINUX source for increased compat
 * New option for adding games to BleemSync UI
 Playstation games can now be added to the BSUI by dropping them into /media/transfer.
 Multidisc games are supported. Naming format should be GameName(Disc 1) GameName(Disc 2) etc.
+Mutitrack games are supported so long as the name format conforms to "GameName (Track 1).bin", "GameName (Track 2).bin" etc.
+Custom cover images (PNG) can also be added to the transfer folder. The image must have the same filename as the game.
+Games requiring SBI files must have the SBI file added in the transfer folder. The name of the SBI file must either match the serial or filename of the corresponding game.
+
 
 Formats supported:
 
 BIN/CUE
-ISO(CUE will generate automatically)
+ISO
+IMG
+PBP
+
+* BleemSync Settings Menu
+BleemSync settings can now be changed directly on the console. To open the Settings Menu press L1 while on the Boot Menu Screen. Note: The console will restart after saving new settings.
+
+* RetroArch Playlist Generation
+Setting the "generate_external_game_playlist" variable in the BleemSync Settings to TRUE will enable automatic playlist generation for all external(USB) psx games added to the stock menu. Thumbnails will automatically be linked to the playlist but must be in PNG format to display in RetroArch.
+
+* RetroArch Update
+The version of RetroArch included with BleemSync has been updated. The black screen freeze issues that occurred in previous versions have been fixed. GLUI menu is now available for use. Support for compressed RA cores has also been added.
+
+* Custom Application Launchers for Stock UI
+The ability to create custom application launchers for the stock UI has been added. By default there are 2 launchers included with BleemSync a RetroArch launcher and a Boot Menu Launcher. For more information about launchers and how to create your own see /bleemsync/etc/bleemsync/SUP/launchers/README.md
+
+* 3rd Party Controller Support for Stock UI
+The stock UI and emulator can now be used with 3rd party controllers. The 3rd party controllers are used to emulate the stock controller input as such the left analog stick is mapped to the d-pad and the right analog stick is not functional.
+
