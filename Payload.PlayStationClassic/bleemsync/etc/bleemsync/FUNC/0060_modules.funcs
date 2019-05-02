@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# mount root
+mount / -o rw,remount
+
+# create dir if it doesn't exist 
+test -d /lib/modules && echo "$FILE exist" || mkdir -p /lib/modules
+
+# Mount psc
+modlow=/lib/modules/
+modupp=/media/bleemsync/etc/bleemsync/SUP/modules/
+sbinlow=/usr/sbin/
+sbinupp=/media/bleemsync/sbin/
+liblow=/usr/lib/
+libupp=/media/bleemsync/lib/
+wod=/media/tmp
+
+# overlayfs mount
+mount -t overlay -o lowerdir="$modlow",upperdir="$modupp",workdir="$wod" overlay "$modlow"
+mount -t overlay -o lowerdir="$sbinlow",upperdir="$sbinupp",workdir="$wod" overlay "$sbinlow"
+mount -t overlay -o lowerdir="$liblow",upperdir="$libupp",workdir="$wod" overlay "$liblow"
+depmod -a
+
+mount / -o ro,remount

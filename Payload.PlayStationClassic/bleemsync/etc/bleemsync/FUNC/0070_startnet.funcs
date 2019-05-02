@@ -1,0 +1,15 @@
+#!/bin/sh
+exec 3>&1 4>&2
+trap 'exec 2>&4 1>&3' 0 1 2 3
+exec 1>/media/logs/startnet.log 2>&1
+
+modprobe asix
+udhcpc -R -n -p /var/run/udhcpc.eth0.pid -i eth0
+
+modprobe 8188eu
+wpa_supplicant -B -Dnl80211 -iwlan0 -c/media/bleemsync/etc/wpa_supplicant.conf
+udhcpc -R -n -p /var/run/udhcpc.wlan0.pid -i wlan0
+
+systemctl restart ssh.service
+systemctl restart telnet.socket
+systemctl restart ftp.socket
