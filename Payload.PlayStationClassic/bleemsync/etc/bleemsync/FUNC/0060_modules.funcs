@@ -26,7 +26,10 @@ mount -t overlay -o lowerdir="$liblow",upperdir="$libupp",workdir="$wod" overlay
 depmod -a
 
 # sanity check for permissions
-chmod 755 /usr/sbin/wpa*
+test -x /usr/sbin/wpa_supplicant && echo "yes" || chmod 755 /usr/sbin/wpa_supplicant
+test -x /usr/sbin/wpa_passphrase && echo "yes" || chmod 755 /usr/sbin/wpa_passphrase
+test -x /usr/sbin/wpa_cli && echo "yes" || chmod 755 /usr/sbin/wpa_cli
+test -x /usr/sbin/iw && echo "yes" || chmod 755 /usr/sbin/iw
 
 # cleanup
 mount / -o ro,remount
