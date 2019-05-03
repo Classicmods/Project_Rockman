@@ -25,4 +25,8 @@ mount -t overlay -o lowerdir="$sbinlow",upperdir="$sbinupp",workdir="$wod" overl
 mount -t overlay -o lowerdir="$liblow",upperdir="$libupp",workdir="$wod" overlay "$liblow"
 depmod -a
 
+# sanity check for permissions
+chmod 755 /usr/sbin/wpa*
+
+# cleanup
 mount / -o ro,remount
