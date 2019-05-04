@@ -8,7 +8,7 @@ mount / -o rw,remount
 
 # create dir if it doesn't exist
 test -d /lib/modules && echo "exist" || mkdir -p /lib/modules
-test -d /media/tmp && echo "exist" || mkdir -p /media/tmp
+test -d /media/bleemsync/tmp && echo "exist" || mkdir -p /media/bleemsync/tmp
 
 # Mount psc
 modlow=/lib/modules/
@@ -17,12 +17,15 @@ sbinlow=/usr/sbin/
 sbinupp=/media/bleemsync/sbin/
 liblow=/usr/lib/
 libupp=/media/bleemsync/lib/
-wod=/media/tmp
+wod=/media/bleemsync/tmp
 
 # overlayfs mount
-mount -t overlay -o lowerdir="$modlow",upperdir="$modupp",workdir="$wod" overlay "$modlow"
-mount -t overlay -o lowerdir="$sbinlow",upperdir="$sbinupp",workdir="$wod" overlay "$sbinlow"
-mount -t overlay -o lowerdir="$liblow",upperdir="$libupp",workdir="$wod" overlay "$liblow"
+#mount -t overlay -o lowerdir="$modlow",upperdir="$modupp",workdir="$wod" overlay "$modlow"
+#mount -t overlay -o lowerdir="$sbinlow",upperdir="$sbinupp",workdir="$wod" overlay "$sbinlow"
+#mount -t overlay -o lowerdir="$liblow",upperdir="$libupp",workdir="$wod" overlay "$liblow"
+mount -t overlay -o lowerdir="$modlow":"$modupp" overlay "$modlow"
+mount -t overlay -o lowerdir="$sbinlow":"$sbinupp" overlay "$sbinlow"
+mount -t overlay -o lowerdir="$liblow":"$libupp" overlay "$liblow"
 depmod -a
 
 # sanity check for permissions
@@ -30,6 +33,7 @@ test -x /usr/sbin/wpa_supplicant && echo "yes" || chmod 755 /usr/sbin/wpa_suppli
 test -x /usr/sbin/wpa_passphrase && echo "yes" || chmod 755 /usr/sbin/wpa_passphrase
 test -x /usr/sbin/wpa_cli && echo "yes" || chmod 755 /usr/sbin/wpa_cli
 test -x /usr/sbin/iw && echo "yes" || chmod 755 /usr/sbin/iw
+test -x /usr/sbin/wifi-wpa-setup && echo "yes" || chmod 755 /usr/sbin/wifi-wpa-setup
 
 # cleanup
 mount / -o ro,remount
