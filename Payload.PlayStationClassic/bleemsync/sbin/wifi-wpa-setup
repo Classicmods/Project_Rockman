@@ -18,7 +18,7 @@ if [ "${#PASS}" -lt "8" ] || [ "${#PASS}" -gt "63" ]; then
 fi
 
 wificonf_h(){
-  echo 'ctrl_interface=/media/etc/wpa_supplicant/'
+  echo 'ctrl_interface=/media/bleemsync/etc/wpa_supplicant/'
   echo 'update_config=1'
   echo
 }
@@ -34,7 +34,7 @@ wificonf(){
   wpa_passphrase ${1+"$@"} | grep -Fv '#'
 }
 
-conf="/media/etc/wpa_supplicant/wpa_supplicant.conf"
+conf="/media/bleemsync/etc/wpa_supplicant/wpa_supplicant.conf"
 wificonf "$SSID" "$PASS" > "$conf" && ret=true || ret=false
 $ret || wificonf_d > "$conf"
 
