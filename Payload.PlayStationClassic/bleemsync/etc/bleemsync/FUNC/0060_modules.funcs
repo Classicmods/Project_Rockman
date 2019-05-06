@@ -28,6 +28,9 @@ test -d /var/volatile/usr/sbin && echo "/usr/sbin found" || mkdir -p /var/volati
 test -d /var/volatile/usr/lib && echo "/usr/lib found" || mkdir -p /var/volatile/usr/lib
 test -d /var/volatile/lib/modules && echo "/lib/modules found" || mkdir -p /var/volatile/lib/modules
 
+#permissions check
+chmod 666 /media/bleemsync/etc/bleemsync/SUP/modules/4.4.22/modules.*
+
 # Mount psc
 modlow=/lib/modules
 modupp=/media/bleemsync/etc/bleemsync/SUP/modules
