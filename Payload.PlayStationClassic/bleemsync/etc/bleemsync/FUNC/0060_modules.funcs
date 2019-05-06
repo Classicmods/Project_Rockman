@@ -22,10 +22,11 @@ symlink_folder_files()
 mount / -o rw,remount
 
 # create dir if it doesn't exist
-test -d /lib/modules && echo "exist" || mkdir -p /lib/modules
-test -d /media/bleemsync/tmp && echo "exist" || mkdir -p /media/bleemsync/tmp
-test -d /var/volatile/usr/sbin && echo "exist" || mkdir -p /var/volatile/usr/sbin
-test -d /var/volatile/usr/lib && echo "exist" || mkdir -p /var/volatile/usr/lib
+test -d /lib/modules/4.4.22/kernel && echo "/lib/modules found" || mkdir -p /lib/modules/4.4.22/kernel
+test -d /media/bleemsync/tmp && echo "tmp found" || mkdir -p /media/bleemsync/tmp
+test -d /var/volatile/usr/sbin && echo "/usr/sbin found" || mkdir -p /var/volatile/usr/sbin
+test -d /var/volatile/usr/lib && echo "/usr/lib found" || mkdir -p /var/volatile/usr/lib
+test -d /var/volatile/lib/modules && echo "/lib/modules found" || mkdir -p /var/volatile/lib/modules
 
 # Mount psc
 modlow=/lib/modules
@@ -38,24 +39,32 @@ wod=/media/bleemsync/tmp
 
 fs=$(blkid -o /dev/sdb1 -s TYPE "$DEV" | awk '{ print $4 }' | sed 's/%//')
 fs1=$(blkid -o /dev/sda1 -s TYPE "$DEV" | awk '{ print $4 }' | sed 's/%//')
-if [ $fs=='TYPE=\"ext4\"' ] || [ $fs=='TYPE=\"ntfs\"' ] || [ $fs1=='TYPE=\"ext4\"' ] || [ $fs1=='TYPE=\"ntfs\"' ]
-then
+echo "$fs"
+echo "$fs1"
+case ${fs}${fs1} in
+'TYPE="ext4"' | 'TYPE="ntfs"' | 'TYPE="exfat"')
 # overlayfs mount
-mount -t overlay -o lowerdir="$modlow":"$modupp" overlay "$modlow"
-mount -t overlay -o lowerdir="$sbinlow":"$sbinupp" overlay "$sbinlow"
-mount -t overlay -o lowerdir="$liblow":"$libupp" overlay "$liblow"
-
-else
+echo "$fs $fs1 detected"
+mount -t overlay -o lowerdir="$modlow":"$modupp" modules "$modlow"
+mount -t overlay -o lowerdir="$sbinlow":"$sbinupp" sbin "$sbinlow"
+mount -t overlay -o lowerdir="$liblow":"$libupp" libs "$liblow"
+depmod -a
+;;
+'TYPE="vfat"')
 # tmpfs mount for fat filesystems
-symlink_folder_files /var/volatile/lib/modules "$modupp"
-overlay_folder /var/volatile/lib/modules "$modlow"
+echo "fat32 detected"
+test -e /lib/modules/4.4.22/modules.order && echo "modules.order exists" || cp /media/bleemsync/etc/bleemsync/SUP/modules/4.4.22/* /lib/modules/4.4.22/
+symlink_folder_files /var/volatile/lib/modules/4.4.22/kernel /media/bleemsync/etc/bleemsync/SUP/modules/4.4.22/kernel
+overlay_folder /var/volatile/lib/modules/4.4.22/kernel /lib/modules/4.4.22/kernel
 symlink_folder_files /var/volatile/usr/sbin "$sbinupp"
 overlay_folder /var/volatile/usr/sbin "$sbinlow"
 symlink_folder_files /var/volatile/usr/lib "$libupp"
 overlay_folder /var/volatile/usr/lib "$liblow"
-fi
-
 depmod -a
+;;
+*)
+echo "No clue"
+esac
 
 # sanity check for permissions
 test -x /usr/sbin/wpa_supplicant && echo "yes" || chmod 755 /usr/sbin/wpa_supplicant
