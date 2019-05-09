@@ -1,0 +1,75 @@
+#!/bin/sh
+#
+#  Copyright 2019 ModMyClassic (https://modmyclassic.com/license)
+#  
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+#Bash Colours
+RESTORE=$(echo -en '\033[0m')
+RED=$(echo -en '\033[00;31m')
+GREEN=$(echo -en '\033[00;32m')
+YELLOW=$(echo -en '\033[00;33m')
+MAGENTA=$(echo -en '\033[00;35m')
+CYAN=$(echo -en '\033[00;36m')
+
+#Set Variables
+v_user="$USER"
+v_hostname="$HOSTNAME"
+v_os="BleemSync $(uname -s -m)"
+v_kernel="$(cat /temp/version/version.ini | awk -F "/" '{print $2 }')"
+v_release="$(uname -r)"
+v_date="$(cat /temp/version/version.ini | awk '{print $2 }')"
+v_cpu="$(cat /proc/cpuinfo | grep Processor | head -n1 | awk '{$1=$2="";print}')"
+v_ram_usage="$(free -m  | grep Mem | awk '{print $3}') / $(free -m  | grep Mem | awk '{print $2}')mb"
+v_cpu_usage="$(top -b -n 1 | grep CPU | awk '{ print $2; }' | head -n1)"
+v_cpu_temp="$(cat /proc/mtktz/mtktscpu | head -n1  | cut -c1-2)c"
+v_pmic_temp="$(cat /proc/mtktz/mtktspmic | head -n1 | cut -c1-2)c"
+v_root_usage="$(df -m / | awk '{ print $4; }' | tail -n1)  / $(df -m / | awk '{ print $2; }' | tail -n1)mb //${MAGENTA} $(df -m / | awk '{ print $5; }' | tail -n1) Used"
+v_data_usage="$(df -m /data | awk '{ print $4; }' | tail -n1) / $(df -m /data | awk '{ print $2; }' | tail -n1)mb //${MAGENTA} $(df -m /data | awk '{ print $5; }' | tail -n1) Used"
+if [ "$(ls -A /media)" ]; then
+	v_media_usage="$(df -m /media | awk '{ print $4; }' | tail -n1) / $(df -m /media | awk '{ print $2; }' | tail -n1)mb //${MAGENTA} $(df -m /media | awk '{ print $5; }' | tail -n1) Used"
+fi
+
+export PATH=$PATH:/media/bleemsync/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/media/bleemsync/lib
+export TERM=xterm-256color
+export TERMINFO=/etc/terminfo
+
+clear
+
+echo "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄"
+echo "█${YELLOW} ,--.   ,--.                         ${RESTORE}█"
+echo "█${YELLOW} |  |-. |  | ,---.  ,---. ,--,--,--. ${RESTORE}█ ${GREEN}User:${RESTORE} $v_user"
+echo "█${YELLOW} | .-. '|  || .-. :| .-. :|        | ${RESTORE}█ ${GREEN}Hostname:${RESTORE} $v_hostname"
+echo "█${YELLOW} | \`-' ||  |\   --.\   --.|  |  |  | ${RESTORE}█ ${GREEN}OS:${RESTORE} $v_os"
+echo "█${YELLOW}  \`---' \`--' \`----' \`----'\`--\`--\`--' ${RESTORE}█ ${GREEN}Kernel:${RESTORE} $v_kernel"
+echo "█${YELLOW}                              ,---.  ${RESTORE}█ ${GREEN}Kernel Release:${RESTORE} $v_release"
+echo "█${YELLOW}                              |   |  ${RESTORE}█ ${GREEN}Kernel Date:${RESTORE} $v_date"
+echo "█${YELLOW}  ,---.,--. ,--.,--,--,  ,---.|  .'  ${RESTORE}█ ${GREEN}CPU:${RESTORE} $v_cpu"
+echo "█${YELLOW} (  .-' \  '  / |      \| .--'|  |   ${RESTORE}█ ${GREEN}RAM Usage:${RESTORE} $v_ram_usage"
+echo "█${YELLOW} .-'  \`) \   '  |  ||  |\ \`--.\`--'   ${RESTORE}█ ${GREEN}CPU Usage:${RESTORE} $v_cpu_usage"
+echo "█${YELLOW} \`----'.-'  /   \`--''--' \`---'.--.   ${RESTORE}█ ${GREEN}CPU temp:${RESTORE} $v_cpu_temp"
+echo "█${YELLOW}       \`---'                  '--'   ${RESTORE}█ ${GREEN}PMIC temp:${RESTORE} $v_pmic_temp"
+echo "█▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█ ${GREEN}ROOT:${RESTORE}  $v_root_usage ${RESTORE}"
+echo "█${CYAN}        Created by ModMyClassic      ${RESTORE}█ ${GREEN}DATA:${RESTORE}  $v_data_usage ${RESTORE}"
+if [ "$(ls -A /media)" ]; then
+	echo "█${CYAN}           modmyclassic.com          ${RESTORE}█ ${GREEN}MEDIA:${RESTORE}  $v_media_usage ${RESTORE}"
+else
+	echo "█${CYAN}           modmyclassic.com          ${RESTORE}█"
+fi
+echo "█▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█"
+echo
+echo "If you have any issues please vist our support discord:"
+echo "${CYAN}https://discordapp.com/invite/8gygsrw${RESTORE}"
+echo

@@ -1,0 +1,6 @@
+[Unit]
+Description=FTP Server
+
+[Service]
+ExecStart=-/usr/bin/busybox-bs ftpd -w /
+StandardInput=socket
