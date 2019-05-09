@@ -1,0 +1,18 @@
+[Unit]
+Description=BleemSync Service
+Requires=sysinit.target
+After=sysinit.target
+Before=shutdown.target
+Conflicts=shutdown.target
+Before=network.target
+DefaultDependencies=false
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/bleemsync_service start
+RemainAfterExit=true
+ExecStop=/usr/bin/bleemsync_service stop
+StandardOutput=journal+console
+
+[Install]
+WantedBy=network.target
