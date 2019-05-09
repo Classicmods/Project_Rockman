@@ -1,3 +1,0 @@
-#!/bin/sh
-echo -ne '\x02\x00\x00\x00' | dd of=/dev/disk/by-partlabel/MISC bs=1 seek=8 conv=notrunc
-echo reboot > /dev/shm/power/control

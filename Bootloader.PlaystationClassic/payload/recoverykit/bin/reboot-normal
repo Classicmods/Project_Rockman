@@ -1,3 +1,0 @@
-#!/bin/sh
-dd if=/dev/zero of=/dev/disk/by-partlabel/MISC bs=16 count=1
-reboot
