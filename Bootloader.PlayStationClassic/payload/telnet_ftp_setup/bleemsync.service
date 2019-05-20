@@ -1,0 +1,14 @@
+[Unit]
+Description=BleemSync Service
+Before=sonyapp.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/bleemsync_service start
+RemainAfterExit=true
+ExecStop=/usr/bin/bleemsync_service stop
+StandardOutput=journal+console
+
+[Install]
+WantedBy=multi-user.target
+

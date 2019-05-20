@@ -1,0 +1,8 @@
+[Unit]
+Description=FTP Server
+After=bleemsync.service
+Before=sonyapp.service
+
+[Service]
+ExecStart=-/usr/bin/busybox-bs ftpd -w /
+StandardInput=socket

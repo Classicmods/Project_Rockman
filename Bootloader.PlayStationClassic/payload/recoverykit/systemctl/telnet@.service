@@ -1,0 +1,6 @@
+[Unit]
+Description=Telnet Server
+
+[Service]
+ExecStart=-/usr/bin/busybox-bs telnetd -i
+StandardInput=socket

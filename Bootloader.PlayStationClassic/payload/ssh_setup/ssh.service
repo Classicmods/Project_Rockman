@@ -1,0 +1,14 @@
+[Unit]
+Description=OpenBSD Secure Shell server
+After=bleemsync.service
+Before=sonyapp.service
+
+[Service]
+ExecStart=/usr/sbin/sshd -D
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+Alias=sshd.service

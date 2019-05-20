@@ -1,0 +1,255 @@
+#!/bin/sh
+#
+#  Copyright 2019 ModMyClassic (https://modmyclassic.com/license)
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+###############################################################################
+# BleemSync Bootloader - CLOSED SOURCE (to prevent people from fucking it up)
+# If someone knows how to open the payload and extract this file then
+# hopefully they know what to modify and what not to modify!
+# ModMyClassic.com / https://discordapp.com/invite/8gygsrw
+###############################################################################
+
+
+RECOVERY_PATH=/tmp/recovery
+RECOVERY_PEM_PATH=/tmp/recovery/etc
+NORMAL_PEM_PATH=/etc
+TMP_PEM=/tmp/upg_pubk.pem
+
+PSC_BACKUP=backup/bin/psc_backup
+EXTRACT_PEM=backup/bin/extract_pubkey
+PUBK_PATH=/etc/upg_pubk.pem
+PATH=$(pwd)/backup/bin:$PATH
+
+
+restore_info(){
+  log_and_display "INFO" "Restoring ${1} in 5... Don't turn off your console!!"
+  sleep 1
+  log_and_display "INFO" "Restoring ${1} in 4... Don't turn off your console!!"
+  sleep 1
+  log_and_display "INFO" "Restoring ${1} in 3... Don't turn off your console!!"
+  sleep 1
+  log_and_display "INFO" "Restoring ${1} in 2... Don't turn off your console!!"
+  sleep 1
+  log_and_display "INFO" "Restoring ${1} in 1... Don't turn off your console!!"
+  sleep 1
+}
+
+
+backup_sony_key(){
+    [ ! -f "${NORMAL_PEM_PATH}/upg_pubk_sony.pem" ] && cp -f "${NORMAL_PEM_PATH}/upg_pubk.pem" "${NORMAL_PEM_PATH}/upg_pubk_sony.pem"
+    [ -d ${RECOVERY_PEM_PATH} ] && [ ! -f "${RECOVERY_PEM_PATH}/upg_pubk_sony.pem" ] && cp -f "${RECOVERY_PEM_PATH}/upg_pubk.pem" "${RECOVERY_PEM_PATH}/upg_pubk_sony.pem"
+}
+
+restore(){
+  start=$(date +%s)
+
+  if [ -f "/media/bleemsync/flags/RESTORE_MAIN" ] \
+        && [ -d "/media/bleemsync/backup" ] \
+        && [ -f "/media/bleemsync/backup/LBOOT.EPB" ] \
+        && $EXTRACT_PEM "/media/bleemsync/backup/LBOOT.EPB" $TMP_PEM; then
+
+    CHG_INFO=$(cat /sys/module/musb_hdrc/parameters/charger_info)
+
+    log_and_display "INFO" "Flashing file system..." 1
+
+    cp -f "/media/bleemsync/backup/LBOOT.EPB" "/media"
+
+    mkdir -p "${RECOVERY_PATH}" && mount /dev/disk/by-partlabel/ROOTFS2 -o rw $RECOVERY_PATH
+    mount -o remount,rw /
+
+    backup_sony_key
+
+    cp -f "${TMP_PEM}" "${RECOVERY_PEM_PATH}/upg_pubk.pem"
+    mount -o bind $TMP_PEM $PUBK_PATH
+    rm -f "/media/bleemsync/flags/RESTORE_MAIN"
+
+    restore_info "main"
+
+    log_and_display "INFO" "Backup will now be extracted. The PSC will restart multiple times afterwards."
+
+    umount -l /media && upgrade_app normal
+  elif [ -f "/media/bleemsync/flags/RESTORE_RECOVERY" ] \
+        && [ -d "/media/bleemsync/backup" ] \
+        && [ -f "/media/bleemsync/backup/LRECOVERY.EPB" ] \
+        && $EXTRACT_PEM "/media/bleemsync/backup/LRECOVERY.EPB" $TMP_PEM; then
+    log_and_display "INFO" "Flashing recovery partition..." 1
+
+    cp -f "/media/bleemsync/backup/LRECOVERY.EPB" "/media"
+
+    mkdir -p "${RECOVERY_PATH}" && mount /dev/disk/by-partlabel/ROOTFS2 -o rw $RECOVERY_PATH
+    mount -o remount,rw /
+
+    backup_sony_key
+
+    mount -o bind $TMP_PEM $PUBK_PATH
+    rm -f "/media/bleemsync/flags/RESTORE_RECOVERY"
+
+    restore_info "recovery"
+
+    umount -l /media && upgrade_app recovery
+  elif [ -f "/media/bleemsync/flags/RESTORE_KERNEL" ] \
+        && [ -d "/media/bleemsync/backup" ] \
+        && [ -f "/media/bleemsync/backup/LBOOT_KERNEL.EPB" ] \
+        && $EXTRACT_PEM "/media/bleemsync/backup/LBOOT_KERNEL.EPB" $TMP_PEM; then
+    log_and_display "INFO" "Flashing Kernel..." 1
+
+    cp -f "/media/bleemsync/backup/LBOOT_KERNEL.EPB" "/media/LBOOT.EPB"
+
+    mkdir -p "${RECOVERY_PATH}" && mount /dev/disk/by-partlabel/ROOTFS2 -o rw $RECOVERY_PATH
+    mount -o remount,rw /
+
+    backup_sony_key
+
+    mount -o bind $TMP_PEM $PUBK_PATH
+    cp -f "${TMP_PEM}" "${RECOVERY_PEM_PATH}/upg_pubk.pem"
+    rm -f "/media/bleemsync/flags/RESTORE_KERNEL"
+
+    restore_info "kernel"
+
+    log_and_display "INFO" "Backup will now be extracted. The PSC will restart multiple times afterwards."
+
+    umount -l /media && upgrade_app normal
+  else
+    rm -f /media/LBOOT.EPB /media/LRECOVERY.EPB
+  fi
+
+  # WARNING!!! CURRENTLY UNTESTED!!! THIS MAY WIPE YOUR GAADATA
+	# LEEEEEEEOOOORRRYYYYYY JEEEEENNNKKIIINNNSSS
+  # if [ -f "/media/bleemsync/flags/RESTORE_GAADATA" ] && [ -d "/media/bleemsync/backup" ] \
+  #       [ -f "/media/bleemsync/backup/LDATA.EPB" ] && ./extract_pubkey "/media/bleemsync/backup/LDATA.EPB" $TMP_PEM; then
+  #   echo "[BLEEMSYNC](INFO) Flashing Gaadata using LDATA.EPB..."
+  #   ./sdl_display "Flashing GAADATA using LDATA.EPB..." 640 120 16 0xFFFFFFFF &
+  #   mv "/media/bleemsync/backup/LDATA.EPB" "/media/LDATA.EPB"
+  #
+  #   mkdir -p "${RECOVERY_PATH}" && mount /dev/disk/by-partlabel/ROOTFS2 -o rw $RECOVERY_PATH
+  #   mount -o remount,rw /
+  #
+  #   backup_sony_key
+  #
+  #   cp -f "${TMP_PEM}" "${NORMAL_PEM_PATH}/upg_pubk.pem"
+  #   cp -f "${TMP_PEM}" "${RECOVERY_PEM_PATH}/upg_pubk.pem"
+  #
+  #   rm -f "/media/bleemsync/flags/RESTORE_GAADATA"
+  #
+  #   sync
+  #
+  #   umount -l /media && upgrade_app normal
+  # fi
+  # WARNING!!! CURRENTLY UNTESTED!!! THIS MAY WIPE YOUR GAADATA
+
+}
+
+verify_backup(){
+  BACKUP_TO_VERIFY=$1
+  RETCODE=0
+
+  $EXTRACT_PEM $BACKUP_TO_VERIFY $TMP_PEM >> /dev/null && mount -o bind $TMP_PEM $PUBK_PATH && image_verify_tool $BACKUP_TO_VERIFY /tmp/test.verf >> /dev/null
+
+  if [ $? != 0 ]; then
+    echo "[BLEEMSYNC](Executing) Backup ${BACKUP_TO_VERIFY} corrupted!"
+    RETCODE=1
+  fi
+
+  umount $PUBK_PATH
+
+  return $RETCODE
+}
+
+backup(){
+  echo "[BLEEMSYNC](Executing) create_backup_pkg_func()"
+  echo 1 > /sys/class/leds/red/brightness
+
+  PATH=$(pwd)/backup/bin:$PATH
+
+  if [ ! -f "/media/bleemsync/backup/LBOOT.EPB" ] || [ -f "/media/bleemsync/flags/BACKUP_MAIN" ] || ! verify_backup "/media/bleemsync/backup/LBOOT.EPB" ; then
+    log_and_display "INFO" "Creating file system backup... (It will take a couple minutes!)"
+
+    [ -f "/media/bleemsync/backup/LBOOT.EPB" ] && rm -f "/media/bleemsync/backup/LBOOT.EPB"
+
+    $PSC_BACKUP normal "/media/bleemsync/backup" &
+    wait_for_completion psc_backup
+
+    $EXTRACT_PEM "/media/bleemsync/backup/LBOOT.EPB" $TMP_PEM
+    mount -o bind $TMP_PEM $PUBK_PATH
+
+    if image_verify_tool "/media/bleemsync/backup/LBOOT.EPB" /tmp/normal.verf >> /dev/null ; then
+      rm -f "/media/bleemsync/flags/BACKUP_MAIN"
+    else
+      rm -f "/media/bleemsync/backup/LBOOT.EPB"
+      log_and_display "ERROR" "File system backup failed!..."
+      sleep 2
+    fi
+
+    umount $PUBK_PATH && rm  -f $TMP_PEM
+  else
+    echo "[BLEEMSYNC](INFO) Skipping main backup!"
+  fi
+
+
+  if [ ! -f "/media/bleemsync/backup/LRECOVERY.EPB" ] || [ -f "/media/bleemsync/flags/BACKUP_RECOVERY" ]  || ! verify_backup "/media/bleemsync/backup/LRECOVERY.EPB"; then
+
+    log_and_display "INFO" "Creating recovery partition backup..."
+
+    [ -f "/media/bleemsync/backup/LRECOVERY.EPB" ] && rm -f "/media/bleemsync/backup/LRECOVERY.EPB"
+
+    $PSC_BACKUP recovery "/media/bleemsync/backup" &
+    wait_for_completion psc_backup
+
+    $EXTRACT_PEM "/media/bleemsync/backup/LRECOVERY.EPB" $TMP_PEM
+    mount -o bind $TMP_PEM $PUBK_PATH
+
+    if image_verify_tool "/media/bleemsync/backup/LRECOVERY.EPB" /tmp/rec.verf >> /dev/null ; then
+      rm -f "/media/bleemsync/flags/BACKUP_RECOVERY"
+    else
+      rm -f "/media/bleemsync/backup/LRECOVERY.EPB"
+      log_and_display "ERROR" "Recovery partition backup failed!..."
+      sleep 2
+    fi
+
+    umount $PUBK_PATH && rm  -f $TMP_PEM
+  else
+    echo "[BLEEMSYNC](INFO) Skipping recovery backup!"
+  fi
+
+  if [ ! -f "/media/bleemsync/backup/LBOOT_KERNEL.EPB" ] || [ -f "/media/bleemsync/flags/BACKUP_KERNEL" ] || ! verify_backup "/media/bleemsync/backup/LBOOT_KERNEL.EPB" ; then
+
+    log_and_display "INFO" "Creating kernel backup..."
+
+    [ -f "/media/bleemsync/backup/LBOOT_KERNEL.EPB" ] && rm -f "/media/bleemsync/backup/LBOOT_KERNEL.EPB"
+
+    $PSC_BACKUP kernel "/media/bleemsync/backup" &
+    wait_for_completion psc_backup
+
+    $EXTRACT_PEM "/media/bleemsync/backup/LBOOT_KERNEL.EPB" $TMP_PEM
+    mount -o bind $TMP_PEM $PUBK_PATH
+
+    if image_verify_tool "/media/bleemsync/backup/LBOOT_KERNEL.EPB" /tmp/kern.verf >> /dev/null ; then
+      rm -f "/media/bleemsync/flags/BACKUP_KERNEL"
+    else
+      rm -f "/media/bleemsync/backup/LBOOT_KERNEL.EPB"
+      log_and_display "ERROR" "Backup of kernel failed!..."
+      sleep 2
+    fi
+
+    umount $PUBK_PATH && rm  -f $TMP_PEM
+  else
+    echo "[BLEEMSYNC](INFO) Skipping kernel backup!"
+  fi
+
+  sync
+
+  echo "[BLEEMSYNC](Executed) create_backup_pkg_func()"
+}
