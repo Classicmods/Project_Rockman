@@ -245,10 +245,15 @@ setup_StockUI() {
   # Create data on tmpfs
   ln -s /gaadata/system/bios "${VOL_DATAPCSX}"
   ln -s /usr/sony/bin/plugins "${VOL_DATAPCSX}"
+  
+  # Handle Folder Selection
+  selected_folder=0
+  [ -f "$bleemsync_path/etc/bleemsync/CFG/selected_folder" ] && selected_folder=$(cat "$bleemsync_path/etc/bleemsync/CFG/selected_folder")
+  "$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd "DELETE FROM MENU_ENTRIES WHERE GAME_ID NOT IN (SELECT GAME_ID FROM FOLDER_ENTRIES WHERE FOLDER_ID = $selected_folder);" ".quit"
 
   # Link games on /mountpoint
   if [ -d "$mountpoint/games" ]; then
-    media_game_ids=(`"$bleemsync_path/bin/sqlite3" "$bleemsync_path/etc/bleemsync/SYS/databases/regional.db" -cmd "SELECT GAME_ID FROM MENU_ENTRIES" ".quit"`)
+    media_game_ids=(`"$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd "SELECT GAME_ID FROM MENU_ENTRIES" ".quit"`)
     for game in "${media_game_ids[@]}"; do
       ln -s "${mountpoint}/games/${game}/" "${VOL_GAADATA}"
       ln -s "${mountpoint}/games/${game}/" "${VOL_DATAPCSX}"
@@ -257,10 +262,10 @@ setup_StockUI() {
       [ ! -f "${mountpoint}/games/${game}/.pcsx/pcsx.cfg" ] && cp "$bleemsync_path/etc/bleemsync/SYS/defaults/pcsx.cfg" "${mountpoint}/games/${game}/.pcsx/pcsx.cfg"
     done
 
-    if [[ `find "${mountpoint}/games/"* -maxdepth 0 -type d | wc -l` -ne ${#media_game_ids[@]} ]]; then
-      echo "[BLEEMSYNC](WARN) You have folders in ${mountpoint}/games/ that are not in the BleemSync database." 
-      echo "[BLEEMSYNC](WARN) Do not manually add or remove games in this folder. Remove any manually created folders and add them via the BleemSync web interface."
-    fi
+#    if [[ `find "${mountpoint}/games/"* -maxdepth 0 -type d | wc -l` -ne ${#media_game_ids[@]} ]]; then
+#      echo "[BLEEMSYNC](WARN) You have folders in ${mountpoint}/games/ that are not in the BleemSync database." 
+#      echo "[BLEEMSYNC](WARN) Do not manually add or remove games in this folder. Remove any manually created folders and add them via the BleemSync web interface."
+#    fi
   fi
   # Force intercept to allow launching custom scripts from stock UI
   mount -o bind "$bleemsync_path/etc/bleemsync/CFG/system.pre" "/usr/sony/share/data/preferences/system.pre"
