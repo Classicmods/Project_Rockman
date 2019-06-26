@@ -247,9 +247,10 @@ setup_StockUI() {
   ln -s /usr/sony/bin/plugins "${VOL_DATAPCSX}"
   
   # Handle Folder Selection
-  selected_folder=0
-  [ -f "$bleemsync_path/etc/bleemsync/CFG/selected_folder" ] && selected_folder=$(cat "$bleemsync_path/etc/bleemsync/CFG/selected_folder")
-  "$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd "DELETE FROM MENU_ENTRIES WHERE GAME_ID NOT IN (SELECT GAME_ID FROM FOLDER_ENTRIES WHERE FOLDER_ID = $selected_folder);" ".quit"
+  if [ -f "$bleemsync_path/etc/bleemsync/CFG/selected_folder" ]; then
+    selected_folder=$(cat "$bleemsync_path/etc/bleemsync/CFG/selected_folder")
+    [ ! -z "$selected_folder" ] && "$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd "PRAGMA foreign_keys = ON; DELETE FROM MENU_ENTRIES WHERE GAME_ID NOT IN (SELECT GAME_ID FROM FOLDER_ITEMS WHERE FOLDER_ID = $selected_folder);" ".quit"
+  fi
 
   # Link games on /mountpoint
   if [ -d "$mountpoint/games" ]; then
@@ -276,7 +277,37 @@ setup_StockUI() {
   echo "[BLEEMSYNC](PROFILE) BleemSync tmpfs sym linking and processing took: $(((end-start)/1000000))ms to execute"
 #-----------------------------------------------------------------------------#
   # Unite EMMC and MEDIA games and databases
-  if [ "$link_EMMC_and_USB" = "1" ]; then
+  if [ -f "$bleemsync_path/etc/bleemsync/CFG/selected_folder" ]; then
+    start=$(date +%s%N)
+
+    emmc_game_ids=(`"$bleemsync_path/bin/sqlite3" "$bleemsync_path/etc/bleemsync/SYS/databases/stockRegional.db" -cmd "SELECT GAME_ID FROM FOLDER_ITEMS WHERE FOLDER_ID = $selected_folder" ".quit"`)
+    if [ ! -z "$emmc_game_ids" ]; then
+      media_gaadata_count=`"$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd "SELECT GAME_ID FROM MENU_ENTRIES ORDER BY GAME_ID DESC LIMIT 1" ".quit"`
+      [ -z "$media_gaadata_count" ] && media_gaadata_count=0
+      echo "[BLEEMSYNC](INFO) EMMC Count ${#emmc_game_ids[@]} Media Count $media_gaadata_count"
+
+      # Merge databases
+      echo "BEGIN TRANSACTION;" > "/tmp/join.sql"
+      "$bleemsync_path/bin/sqlite3" "$bleemsync_path/etc/bleemsync/SYS/databases/stockRegional.db" -cmd ".output /tmp/emmc_games.sql" \
+        ".mode insert MENU_ENTRIES" "select GAME_ID + $media_gaadata_count, GAME_TITLE_STRING, PUBLISHER_NAME, RELEASE_YEAR, PLAYERS, RATING_IMAGE, GAME_MANUAL_QR_IMAGE, case when LINK_GAME_ID = '' then LINK_GAME_ID else LINK_GAME_ID + $media_gaadata_count end, 9999 from GAME WHERE GAME_ID IN (SELECT GAME_ID FROM FOLDER_ITEMS WHERE FOLDER_ID = $selected_folder);" \
+        ".mode insert DISC" "select null, GAME_ID + $media_gaadata_count, DISC_NUMBER, BASENAME from DISC WHERE GAME_ID IN (SELECT GAME_ID FROM FOLDER_ITEMS WHERE FOLDER_ID = $selected_folder);" ".quit"
+
+      cat "/tmp/emmc_games.sql" >> "/tmp/join.sql"
+      echo "COMMIT;" >> "/tmp/join.sql"
+      "$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd ".read /tmp/join.sql" ".quit"
+      
+      # Link directories
+      for i in "${emmc_game_ids[@]}"; do
+        if [ -d "/gaadata/$i" -a -d "/data/AppData/sony/pcsx/$i" ]; then
+          new_id=$(( media_gaadata_count + i ))   
+          ln -s "/gaadata/$i/" "${VOL_GAADATA}/$new_id"
+          ln -s "/data/AppData/sony/pcsx/$i/" "${VOL_DATAPCSX}/$new_id"
+        fi
+      done 
+    fi
+    end=$(date +%s%N)
+    echo "[BLEEMSYNC](PROFILE) BleemSync EMMC + USB dyna link took: $(((end-start)/1000000))ms to execute"
+  elif [ "$link_EMMC_and_USB" = "1" ]; then
     start=$(date +%s%N)
 
     emmc_gaadata_count=`"$bleemsync_path/bin/sqlite3" "/gaadata/databases/regional.db" -cmd "SELECT GAME_ID FROM GAME ORDER BY GAME_ID DESC LIMIT 1" ".quit"`
@@ -303,11 +334,12 @@ setup_StockUI() {
       fi
     done 
 
-    if [ "$link_alphabeticalise" = "1" ]; then
-      "$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd "UPDATE MENU_ENTRIES SET POSITION=0" ".quit"
-    fi
     end=$(date +%s%N)
     echo "[BLEEMSYNC](PROFILE) BleemSync EMMC + USB dyna link took: $(((end-start)/1000000))ms to execute"
+  fi
+  
+  if [ "$link_alphabeticalise" = "1" ]; then
+      "$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd "UPDATE MENU_ENTRIES SET POSITION=0" ".quit"
   fi
 #-----------------------------------------------------------------------------#
   # If enabled, load any additional additional launchers into the ui_menu database
