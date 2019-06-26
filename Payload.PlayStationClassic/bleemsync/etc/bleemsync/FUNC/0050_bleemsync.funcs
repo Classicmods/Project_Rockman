@@ -412,6 +412,10 @@ execute_bleemsync_func(){
       rm -f "${game}pcsx.cfg"
     fi
   done
+  
+  if [ "$set_gaadata_writable" != "1" ]; then
+    mount -o remount,ro /gaadata
+  fi
 
   end=$(date +%s%N)
   echo "[BLEEMSYNC](PROFILE) BleemSync general fixing took: $(((end-start)/1000000))ms to execute"
