@@ -43,6 +43,7 @@ intercept_file_formats=(    # alternative PCSX ReARMed game formats
   "mdf"
   "toc"
   "cbn"
+  "chd"
 )
 ui_menu_pid=""
 
