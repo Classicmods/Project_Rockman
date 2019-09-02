@@ -339,7 +339,7 @@ setup_StockUI() {
   fi
   
   if [ "$link_alphabeticalise" = "1" ]; then
-      "$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd "UPDATE MENU_ENTRIES SET POSITION=0" ".quit"
+      "$bleemsync_path/bin/sqlite3" "${VOL_GAADATA}/databases/regional.db" -cmd "UPDATE MENU_ENTRIES SET POSITION=0" "DROP VIEW GAME" "CREATE VIEW GAME AS SELECT * FROM MENU_ENTRIES ORDER BY POSITION, LOWER(GAME_TITLE_STRING)" ".quit"
   fi
 #-----------------------------------------------------------------------------#
   # If enabled, load any additional additional launchers into the ui_menu database
