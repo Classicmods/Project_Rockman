@@ -329,8 +329,8 @@ setup_StockUI() {
     for i in $(seq 1 $emmc_gaadata_count); do
       if [ -d "/gaadata/$i" -a -d "/data/AppData/sony/pcsx/$i" ]; then
         new_id=$(( media_gaadata_count + i ))   
-        ln -s "/gaadata/$i/" "${VOL_GAADATA}/$new_id"
-        ln -s "/data/AppData/sony/pcsx/$i/" "${VOL_DATAPCSX}/$new_id"
+        [ ! -e "${VOL_GAADATA}/$new_id" ] && ln -s "/gaadata/$i/" "${VOL_GAADATA}/$new_id" || echo "[BLEEMSYNC](ERROR) EMMC Game could not be linked game folder already exists"
+        [ ! -e "${VOL_DATAPCSX}/$new_id" ] && ln -s "/data/AppData/sony/pcsx/$i/" "${VOL_DATAPCSX}/$new_id" || echo "[BLEEMSYNC](ERROR) EMMC Game could not be linked data folder already exists"
       fi
     done 
 
@@ -372,8 +372,8 @@ setup_StockUI() {
             let total_count++
             echo "INSERT INTO DISC VALUES(NULL,$total_count,1,'$launcher_filename');" >> "/tmp/launcher.sql"
             echo "INSERT INTO MENU_ENTRIES VALUES($total_count,'$launcher_title','$launcher_publisher',$launcher_year,1,'CERO_A','QR_CODE_GM',NULL,$launcher_sort);" >> "/tmp/launcher.sql"
-            ln -s "$launcher" "${VOL_GAADATA}/$total_count"
-            ln -s "$launcher" "${VOL_DATAPCSX}/$total_count"
+            [ ! -e "${VOL_GAADATA}/$total_count" ] && ln -s "$launcher" "${VOL_GAADATA}/$total_count" || echo "[BLEEMSYNC](ERROR) Launcher could not be linked game folder already exists"
+            [ ! -e "${VOL_DATAPCSX}/$total_count" ] && ln -s "$launcher" "${VOL_DATAPCSX}/$total_count" || echo "[BLEEMSYNC](ERROR) Launcher could not be linked data folder already exists"
             echo "[BLEEMSYNC](INFO) launcher loaded: $launcher"
           fi
         fi
