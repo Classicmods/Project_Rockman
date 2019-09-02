@@ -1,0 +1,64 @@
+#!/bin/sh
+#
+#  Copyright 2019 ModMyClassic (https://modmyclassic.com/license)
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+###############################################################################
+# BleemSync Function Library - Networking
+# ModMyClassic.com / https://discordapp.com/invite/8gygsrw
+###############################################################################
+
+init_networking()
+{
+  mkdir -p "/var/volatile/mount/lib/modulesw" "/var/volatile/mount/usr"
+  mount "$bleemsync_path/network/usr.sqsh" "/var/volatile/mount/usr"
+  #Create Module folder on rootfs (script in squashfs to protect from corruption issues)
+  /var/volatile/mount/usr/share/check_module_folder.sh
+  [ ! -f "$bleemsync_path/network/etc/wpa_supplicant/wpa_supplicant.conf" ] && cp "$bleemsync_path/network/etc/wpa_supplicant/wpa_supplicant_DEFAULT.conf" "$bleemsync_path/network/etc/wpa_supplicant/wpa_supplicant.conf"
+  
+  symlink_folder_files "/var/volatile/mount/lib/modules" "$bleemsync_path/network/lib/modules"
+  symlink_folder_files "/var/volatile/mount/lib/firmware" "$bleemsync_path/network/lib/firmware"
+  symlink_folder_files "/var/volatile/mount/etc" "$bleemsync_path/network/etc"
+  mount -t overlay overlay -o lowerdir="/lib/modules",upperdir="/var/volatile/mount/lib/modules",workdir="/var/volatile/mount/lib/modulesw" "/lib/modules"
+  overlay_folder "/var/volatile/mount/lib/firmware" "/lib/firmware"
+  overlay_folder "/var/volatile/mount/etc" "/etc"
+  overlay_folder "/var/volatile/mount/usr" "/usr"
+
+  depmod -a
+
+  cat "$bleemsync_path/etc/bleemsync/CFG/modules_to_load.cfg" | xargs -I % modprobe %
+  ip link set wlan0 up
+  
+  [ -f "$bleemsync_path/etc/bleemsync/CFG/ssid.cfg" ] && cat "$bleemsync_path/etc/bleemsync/CFG/ssid.cfg" | wifi-wpa-setup && rm "$bleemsync_path/etc/bleemsync/CFG/ssid.cfg"
+
+  systemctl restart ssh.service
+  systemctl restart telnet.socket
+  /usr/sbin/wpa_supplicant -B -Dnl80211 -iwlan0 -C/var/run/wpa_supplicant -c/etc/wpa_supplicant/wpa_supplicant.conf
+  
+  # For wired adapters
+  udhcpc -R -n -p /var/run/udhcpc.eth0.pid -i eth0 &
+  # For wireless adapters
+  udhcpc -R -x hostname:"$HOSTNAME" -t 10 -n -p /var/run/udhcpc.wlan0.pid -i wlan0 &
+}
+
+cleanup_networking()
+{
+  sync
+  umount "/lib/firmware"
+  umount "/lib/modules"
+  umount "/etc"
+  umount "/usr"
+  umount "/var/volatile/mount/usr"
+}

@@ -555,6 +555,14 @@ execute_bleemsync_func(){
   end=$(date +%s%N)
   echo "[BLEEMSYNC](PROFILE) BleemSync UI startup took: $(((end-start)/1000000))ms to execute"
 #-----------------------------------------------------------------------------#
+  if [ "$enable_networking" = "1" ]; then
+    start=$(date +%s%N)
+    sdl_text "Setting up network..."
+    init_networking &> "$mountpoint/logs/network.log"
+    end=$(date +%s%N)
+    echo "[BLEEMSYNC](PROFILE) Network Setup execution took: $(((end-start)/1000000))ms to execute"
+  fi
+#-----------------------------------------------------------------------------#
   # Reload and apply udev rules that were overmounted above
   # Allows both controllers to be detected through a USB hub
   sdl_text "Mounting files..."
@@ -607,6 +615,7 @@ execute_bleemsync_func(){
   echo "[BLEEMSYNC](Executed) execute_bleemsync_func()"
   killall -s TERM BleemSync &> "/dev/null"
   kill_ui_programs
+  [ "$enable_networking" = "1" ] && cleanup_networking >> "$mountpoint/logs/network.log" 2>&1
   reboot
   exit 0
 }
