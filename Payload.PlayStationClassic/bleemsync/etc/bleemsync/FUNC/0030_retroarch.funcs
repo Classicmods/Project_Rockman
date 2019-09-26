@@ -56,7 +56,6 @@ launch_retroarch_from_StockUI(){
   fi
   mkdir -p "$ra_savestate_path"
   link_ra_savestates
-  export HOME="$retroarch_path"
   #  Check if this is a Save State load
   if [ "$intercept_save_state" = true ]; then
     echo "[BLEEMSYNC](INFO) This is a Save State load"
@@ -74,7 +73,7 @@ launch_retroarch_from_StockUI(){
   echo "[BLEEMSYNC](INFO) Launching RetroArch for game $intercept_game_path"
   end=$(date +%s%N)
   echo "[BLEEMSYNC](PROFILE) RetroArch launch_retroarch_from_StockUI function took: $(((end-start)/1000000))ms to execute (up to launching RetroArch executable)"
-  "$bleemsync_path/etc/bleemsync/SUP/scripts/ra_launch.sh" -v -L "$retroarch_path/.config/retroarch/cores/pcsx_rearmed_libretro.so" "$intercept_game_path"
+  "$bleemsync_path/etc/bleemsync/SUP/scripts/ra_launch.sh" -v -L "$retroarch_path/config/retroarch/cores/pcsx_rearmed_libretro.so" "$intercept_game_path"
   echo "[BLEEMSYNC](INFO) RetroArch exit code $?"
   save_ra_savestates
   rm -fr "/tmp/ra_cache"
