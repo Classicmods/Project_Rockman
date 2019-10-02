@@ -45,12 +45,15 @@ init_networking()
 
   systemctl restart ssh.service
   systemctl restart telnet.socket
-  /usr/sbin/wpa_supplicant -B -Dnl80211 -iwlan0 -C/var/run/wpa_supplicant -c/etc/wpa_supplicant/wpa_supplicant.conf
+  systemctl restart ftp.socket
+  /usr/sbin/wpa_supplicant -B -Dnl80211 -iwlan0 -C/var/run/wpa_supplicant -c "$bleemsync_path/network/etc/wpa_supplicant/wpa_supplicant.conf"
   
   # For wired adapters
   udhcpc -R -n -p /var/run/udhcpc.eth0.pid -i eth0 &
   # For wireless adapters
   udhcpc -R -x hostname:"$HOSTNAME" -t 10 -n -p /var/run/udhcpc.wlan0.pid -i wlan0 &
+  
+  dmesg &> "$mountpoint/logs/dmesg.log"
 }
 
 cleanup_networking()
