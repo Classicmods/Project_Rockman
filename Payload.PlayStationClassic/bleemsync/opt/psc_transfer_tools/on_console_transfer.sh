@@ -21,16 +21,7 @@
 ###############################################################################
 
 source "/var/volatile/bleemsync.cfg"
-
-sdl_text(){
-  text_x=640
-  text_y=120
-  text_size=16
-  text_font="/usr/share/fonts/ttf/LiberationMono-Regular.ttf"
-  text_bg="0x7E000000"
-  background="$bleemsync_path/etc/bleemsync/IMG/splashscreen.png"
-  "$bleemsync_path/bin/sdl_text_display" "$1" $text_x $text_y $text_size $text_font 255 255 255 $background $text_bg
-}
+source "$bleemsync_path/etc/bleemsync/FUNC/0000_shared.funcs"
 
 [ ! -d "$mountpoint/games/" ] && mkdir -p "$mountpoint/games/"
 [ ! -d "$mountpoint/transfer/" ] && mkdir -p "$mountpoint/transfer/"
